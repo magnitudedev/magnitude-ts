@@ -19,7 +19,7 @@ let apiInstance: AxiosInstance;
  */
 export function initializeApi(apiKey: string): void {
     apiInstance = axios.create(DEFAULT_CONFIG);
-    apiInstance.defaults.headers.common['Authorization'] = `Bearer ${apiKey}`;
+    apiInstance.defaults.headers.common['X-API-Key'] = apiKey;
 }
 
 /**
