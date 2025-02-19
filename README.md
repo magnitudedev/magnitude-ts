@@ -301,7 +301,7 @@ import { Magnitude, TestCase } from 'magnitude-ts';
 
 async function runLoginTest() {
     // Initialize client
-    const client = new Magnitude(process.env.MAGNITUDE_API_KEY);
+    const client = new Magnitude(); // assumes MAGNITUDE_API_KEY is set
 
     // Create test case
     const loginTest: TestCase = {
