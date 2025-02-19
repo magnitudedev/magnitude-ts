@@ -1,6 +1,9 @@
 import axios, { AxiosInstance } from 'axios';
 import { TestCase, TestRun } from './types';
 
+// Progress callback type
+export type ProgressCallback = (testRun: TestRun) => void;
+
 // Default configuration
 const DEFAULT_CONFIG = {
     baseURL: 'https://api.app.magnitude.run/api',
@@ -64,15 +67,22 @@ function delay(ms: number): Promise<void> {
 /**
  * Runs a single test case and returns the test run result
  * @param testCase The test case to run
+ * @param onProgress Optional callback for progress updates
  * @returns Promise containing the test run result
  */
-export async function runTestCase(testCase: TestCase): Promise<TestRun> {
+export async function runTestCase(testCase: TestCase, onProgress?: ProgressCallback): Promise<TestRun> {
     // Start the test run
     const runId = await startTestRun(testCase);
 
     // Poll for results every 5 seconds until done
     while (true) {
         const testRun = await getTestRunStatus(runId);
+
+        // Call progress callback if provided
+        if (onProgress) {
+            onProgress(testRun);
+        }
+
         if (testRun.is_done) {
             return testRun;
         }
@@ -83,9 +93,10 @@ export async function runTestCase(testCase: TestCase): Promise<TestRun> {
 /**
  * Runs multiple test cases in parallel and returns array of test run results
  * @param testCases Array of test cases to run
+ * @param onProgress Optional callback for progress updates
  * @returns Promise containing array of test run results in the same order as input
  */
-export async function runMultipleTestCases(testCases: TestCase[]): Promise<TestRun[]> {
+export async function runMultipleTestCases(testCases: TestCase[], onProgress?: ProgressCallback): Promise<TestRun[]> {
     // Start all test runs in parallel
     const runIds = await Promise.all(testCases.map(testCase => startTestRun(testCase)));
 
@@ -96,6 +107,12 @@ export async function runMultipleTestCases(testCases: TestCase[]): Promise<TestR
     while (pendingRunIds.size > 0) {
         const statusChecks = Array.from(pendingRunIds).map(async runId => {
             const testRun = await getTestRunStatus(runId);
+
+            // Call progress callback if provided
+            if (onProgress) {
+                onProgress(testRun);
+            }
+
             if (testRun.is_done) {
                 pendingRunIds.delete(runId);
                 results[runIds.indexOf(runId)] = testRun;

@@ -165,6 +165,39 @@ The parsed output includes:
 - Any problems encountered during testing
 - Actions taken during the test
 
+### Progress Tracking
+
+You can track test progress in real-time by providing a progress callback function to `runTestCase` or `runMultipleTestCases`. The callback receives the current `TestRun` object as it updates:
+
+```typescript
+// Custom progress callback
+const onProgress = (testRun: TestRun) => {
+    const completedSteps = testRun.steps.filter(step => step.status !== 'pending').length;
+    const totalSteps = testRun.steps.length;
+    console.log(`Progress: ${completedSteps}/${totalSteps} steps completed`);
+};
+
+// Use with runTestCase
+const result = await client.runTestCase(testCase, onProgress);
+
+// Use with multiple test cases
+const results = await client.runMultipleTestCases([testCase1, testCase2], onProgress);
+```
+
+For convenience, Magnitude provides a default progress handler that shows detailed progress information:
+
+```typescript
+// Use the built-in progress handler
+const defaultProgress = Magnitude.createDefaultProgressHandler();
+const result = await client.runTestCase(testCase, defaultProgress);
+```
+
+The default handler displays:
+- Overall progress percentage
+- Currently executing step
+- Completed steps with their check results
+- Real-time status of checks in the current step
+
 ### Test Run Structure
 
 The `TestRun` response provides detailed information about the test execution:
@@ -295,7 +328,6 @@ async function runLoginTest() {
                             value: "securepass123",
                             sensitive: true
                         }
-
                     ],
                     other: ""
                 }
@@ -303,8 +335,11 @@ async function runLoginTest() {
         ]
     };
 
-    // Run the test
-    const result = await client.runTestCase(loginTest);
+    // Use the default progress handler
+    const progressHandler = Magnitude.createDefaultProgressHandler();
+
+    // Run the test with progress tracking
+    const result = await client.runTestCase(loginTest, progressHandler);
 
     // Parse and display results
     console.log(client.parseTestRun(result));

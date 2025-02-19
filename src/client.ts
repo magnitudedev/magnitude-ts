@@ -1,4 +1,4 @@
-import { runTestCase, runMultipleTestCases, initializeApi } from './api';
+import { runTestCase, runMultipleTestCases, initializeApi, ProgressCallback } from './api';
 import { TestCase, TestRun, Problem } from './types';
 import { validateTestCase, validateTestCases } from './schema';
 
@@ -16,16 +16,51 @@ export class Magnitude {
         initializeApi(this.apiKey);
     }
 
-    async runTestCase(testCase: TestCase): Promise<TestRun> {
-        // Validate the test case structure before running
-        validateTestCase(testCase);
-        return runTestCase(testCase);
+    /**
+     * Creates a default progress handler that prints a simple progress message
+     */
+    static createDefaultProgressHandler(): ProgressCallback {
+        return (testRun: TestRun) => {
+            const completedSteps = testRun.steps.filter(step => step.status !== 'pending').length;
+            const totalSteps = testRun.steps.length;
+            const progress = Math.round((completedSteps / totalSteps) * 100);
+
+            console.log(`\n⏳ Test run ${testRun.id}: ${progress}% complete (${completedSteps}/${totalSteps} steps)`);
+
+            // Show passed steps and their checks
+            testRun.steps.forEach((step, index) => {
+                if (step.status === 'passed') {
+                    console.log(`  ✅ Step ${index + 1}: ${step.description}`);
+                    step.checks.forEach((check, checkIndex) => {
+                        if (check.status === 'passed') {
+                            console.log(`    ✓ ${check.description}`);
+                        }
+                    });
+                } else if (step.status === 'pending' && index === completedSteps) {
+                    // Show current step in progress
+                    console.log(`  ⏳ Step ${index + 1}: ${step.description}`);
+                    step.checks.forEach((check, checkIndex) => {
+                        if (check.status === 'passed') {
+                            console.log(`    ✓ ${check.description}`);
+                        } else if (check.status === 'pending') {
+                            console.log(`    ⏳ ${check.description}`);
+                        }
+                    });
+                }
+            });
+        };
     }
 
-    async runMultipleTestCases(testCases: TestCase[]): Promise<TestRun[]> {
+    async runTestCase(testCase: TestCase, onProgress?: ProgressCallback): Promise<TestRun> {
+        // Validate the test case structure before running
+        validateTestCase(testCase);
+        return runTestCase(testCase, onProgress);
+    }
+
+    async runMultipleTestCases(testCases: TestCase[], onProgress?: ProgressCallback): Promise<TestRun[]> {
         // Validate all test cases before running
         validateTestCases(testCases);
-        return runMultipleTestCases(testCases);
+        return runMultipleTestCases(testCases, onProgress);
     }
 
     parseTestRun(testRun: TestRun): string {
