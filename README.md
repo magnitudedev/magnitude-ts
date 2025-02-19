@@ -65,11 +65,11 @@ interface TestStep {
 interface TestData {
     // Optional array of key-value pairs used in the test
     // Defaults to empty array if not provided
-    data: TestDataEntry[];
+    data?: TestDataEntry[];
     
     // Optional additional context or metadata for the test step
     // Defaults to empty string if not provided
-    other: string;
+    other?: string;
 }
 
 interface TestDataEntry {
@@ -81,7 +81,7 @@ interface TestDataEntry {
     
     // Whether this data should be masked in logs/reports
     // Defaults to false if not provided
-    sensitive: boolean;
+    sensitive?: boolean;
 }
 ```
 
