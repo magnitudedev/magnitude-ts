@@ -1,11 +1,20 @@
 {
   "name": "magnitude-ts",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A TypeScript client for running automated UI tests through the Magnitude testing platform",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    "require": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    },
+    "import": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/magnitudedev/magnitude-ts.git"
@@ -18,7 +27,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && pkgroll",
+    "check": "tsc --noEmit",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -32,6 +42,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.13.4",
+    "pkgroll": "^2.10.0",
     "typescript": "~5.7.2"
   },
   "dependencies": {
