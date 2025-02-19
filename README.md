@@ -1,6 +1,6 @@
-# Magnitude Test Runner
+# Magnitude Client
 
-A TypeScript client for running automated UI tests through the Magnitude testing platform.
+A TypeScript client for running automated UI tests through the Magnitude testing platform [https:/magnitude.run].
 
 ## Installation
 
@@ -320,5 +320,4 @@ The client will throw errors in these cases:
 - Invalid test case format
 - API connection issues
 
-Make sure to wrap your calls in try-catch blocks for proper error handling. 
 Make sure to wrap your calls in try-catch blocks for proper error handling. 
