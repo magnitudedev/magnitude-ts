@@ -2,18 +2,18 @@
 export interface TestDataEntry {
     key: string;
     value: string;
-    sensitive: boolean;
+    sensitive?: boolean;
 }
 
 export interface TestData {
-    data: TestDataEntry[];
-    other: string;
+    data?: TestDataEntry[];
+    other?: string;
 }
 
 export interface TestStep {
     description: string;
-    checks: string[];
-    test_data: TestData;
+    checks?: string[];
+    test_data?: TestData;
 }
 
 export interface TestCase {
