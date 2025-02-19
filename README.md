@@ -1,6 +1,6 @@
 # Magnitude Client
 
-A TypeScript client for running automated UI tests through the Magnitude testing platform [https:/magnitude.run].
+A TypeScript client for running automated UI tests through the [Magnitude](https:/magnitude.run) testing platform.
 
 ## Installation
 
