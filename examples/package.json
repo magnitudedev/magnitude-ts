@@ -1,0 +1,19 @@
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx ts-node example.ts",
+    "build-run": "cd .. && npm run build && cd examples && npx ts-node example.ts",
+    "build-watch": "cd .. && npm run build -- --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^22.13.4",
+    "magnitude-ts": "file:..",
+    "typescript": "^5.7.3"
+  }
+}
