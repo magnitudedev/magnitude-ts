@@ -3,92 +3,9 @@ import { z } from 'zod';
 import { TestRun as TestRunData, Problem as ProblemData } from './types'; // move this?
 import crypto from 'crypto';
 import { Magnitude } from './client';
+import { TestRenderer } from './testRenderer';
+import { TestRunResult, Problem } from './dataWrappers';
 
-export class Problem {
-    // Wrapper class for reported problems
-    private data: ProblemData;
-
-    constructor(data: ProblemData) {
-        this.data = data;
-    }
-
-    getTitle(): string {
-        return this.data.title;
-    }
-
-    getSeverity(): "critical" | "high" | "medium" | "low" | "cosmetic" {
-        return this.data.severity;
-    }
-
-    getCategory(): "visual" | "functional" {
-        return this.data.category;
-    }
-
-    getExpectedResult(): string {
-        return this.data.expected_result;
-    }
-
-    getActualResult(): string {
-        return this.data.actual_result;
-    }
-
-    isFatal(): boolean {
-        // Whether this problem caused the test to fail
-        return this.data.is_fatal;
-    }
-}
-
-export class TestRunResult {
-    // Wrapper class for returned test data
-    private data: TestRunData;
-
-    constructor(data: TestRunData) {
-        this.data = data;
-    }
-
-    hasProblems() {
-        return this.getProblems().length > 0;
-    }
-
-    getProblems(): Problem[] {
-        const problems: Problem[] = [];
-        for (const step of this.data.steps) {
-            for (const problem of step.problems ?? []) {
-                problems.push(new Problem(problem));
-            }
-            for (const check of step.checks) {
-                for (const problem of check.problems ?? []) {
-                    problems.push(new Problem(problem));
-                }
-            }
-        }
-        return problems;
-    }
-
-    isDone(): boolean {
-        // Whether the test is done running - does not indicate passed/failed state or whether any problems.
-        return this.data.is_done;
-    }
-
-    hasPassed() {
-        // If last step/check is passed, test is passed
-        if (!this.data.steps) {
-            // Shouldn't really happen but ok
-            return true;
-        }
-        const lastStep = this.data.steps.at(-1)!;
-        if (lastStep.checks.length > 0) {
-            return lastStep.checks.at(-1)!.status === "passed";
-        }
-        return lastStep.status === "passed";
-    }
-
-    getHash(): string {
-        return crypto.createHash('sha256')
-            .update(JSON.stringify(this.data))
-            .digest('hex');
-    }
-}
 
 export class TestRunner {
     private testCase: TestCase;
@@ -101,6 +18,8 @@ export class TestRunner {
     private problemCallback: ((problem: Problem) => void) | null = null;
     private lastResultHash: string | null = null;
     private lastProblemCount: number = 0;
+    private showDisplay: boolean = false;
+    private renderer: TestRenderer | null = null;
 
     constructor(testCase: TestCase) {
         // Start test case
@@ -109,6 +28,13 @@ export class TestRunner {
         this.runningPromise = new Promise<TestRunResult>((resolve, reject) => {
             this.resolveRunningPromise = resolve;
             this.rejectRunningPromise = reject;
+        });
+
+        // Add cleanup handler for the renderer
+        this.runningPromise.finally(() => {
+            if (this.renderer) {
+                this.renderer.stopRendering();
+            }
         });
 
         this.start();
@@ -120,17 +46,18 @@ export class TestRunner {
 
         if (runHash != this.lastResultHash) {
             // Different from the last result that we polled
-            if (this.progressCallback) this.progressCallback(run);
+            //if (this.progressCallback) this.progressCallback(run);
+            this.callProgressCallback(run);
         }
 
         const problems = run.getProblems();
 
         const numNewProblems = problems.length - this.lastProblemCount;
 
-        if (numNewProblems > 0 && this.problemCallback) {
+        if (numNewProblems > 0) {
             // Do callback for new problems
             for (const problem of problems.slice(-numNewProblems)) {
-                this.problemCallback(problem);
+                this.callProblemCallback(problem);
             }
         }
 
@@ -174,11 +101,8 @@ export class TestRunner {
             throw Error("Polling before run started");
         }
         // Get the test case results and call any appropriate handlers
-        console.log("Polling...");
-        //const someCondition = Math.random() > 0.8;
 
         // Call API to get results and make new TestRunResult() around the returned data
-        //result = new TestRunResult();
         const run = new TestRunResult(await Magnitude.getInstance().getTestRunStatus(this.runId));
 
         //console.log("Run:", run);
@@ -187,10 +111,27 @@ export class TestRunner {
 
         if (run.isDone()) {
             // when test case is totally done we should do this
+            if (this.showDisplay && this.renderer) {
+                this.renderer.stopRendering();
+            }
             this.resolveRunningPromise(run);
         } else {
             this.schedulePoll();
         }
+    }
+
+    private callProgressCallback(run: TestRunResult) {
+        // If display is enabled, update the renderer with new data
+        if (this.showDisplay && this.renderer) {
+            this.renderer.updateData(run);
+        }
+        
+        // Call the original callback if it exists
+        if (this.progressCallback) this.progressCallback(run);
+    }
+
+    private callProblemCallback(problem: Problem) {
+        if (this.problemCallback) this.problemCallback(problem);
     }
 
     // TODO: call these on poll when appropriate, also change signature
@@ -199,8 +140,23 @@ export class TestRunner {
         return this;
     }
 
-    public onProblem(callback: (problem: any) => void): TestRunner {
+    public onProblem(callback: (problem: Problem) => void): TestRunner {
         this.problemCallback = callback;
+        return this;
+    }
+
+    public show(): TestRunner {
+        // Create renderer if it doesn't exist
+        if (!this.renderer) {
+            this.renderer = new TestRenderer();
+        }
+        
+        // Set the flag to show display
+        this.showDisplay = true;
+        
+        // Start the renderer immediately, even if we don't have test data yet
+        this.renderer.startRendering(this.testCase);
+        
         return this;
     }
 

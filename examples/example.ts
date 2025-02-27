@@ -17,11 +17,14 @@ async function main() {
         // .secureData({ password: process.env.TEST_USER_PASSWORD! }) // encrypted data
     
     console.log(loginTest);
+
+
+    await loginTest.run().show();
     
     // start the test case!
-    await loginTest.run()
-        .onProblem(problem => console.log("Got a problem!", problem))
-        .onProgress(run => console.log("Run progress:", run));
+    // await loginTest.run()
+    //     .onProblem(problem => console.log("Got a problem!", problem))
+    //     .onProgress(run => console.log("Run progress:", run));
 }
 
 main();
