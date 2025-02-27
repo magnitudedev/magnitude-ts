@@ -1,2 +1,3 @@
-export * from './client';
-export * from './types'; 
+export { Magnitude } from './client';
+//export * from './types';
+export { TestCase } from './testCase'

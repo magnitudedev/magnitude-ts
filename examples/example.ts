@@ -1,47 +1,23 @@
 import { Magnitude, TestCase } from 'magnitude-ts';
 
-async function runLoginTest() {
-    // Initialize client
-    const client = new Magnitude(); // assumes MAGNITUDE_API_KEY is set
+Magnitude.init("foo");
 
-    // Create test case
-    const loginTest: TestCase = {
-        id: "login-test",
-        name: "Basic Login Test",
-        url: "https://qa-bench.com/",
-        steps: [
-            {
-                description: "Login with valid credentials",
-                checks: [
-                    "Can see the dashboard"
-                ],
-                test_data: {
-                    data: [
-                        {
-                            key: "username",
-                            value: "test-user@magnitude.run",
-                            sensitive: false
-                        },
-                        {
-                            key: "password",
-                            value: "test",
-                            sensitive: true
-                        }
-                    ],
-                    other: ""
-                }
-            }
-        ]
-    };
-
-    // Use the default progress handler
-    const progressHandler = Magnitude.createDefaultProgressHandler();
-
-    // Run the test with progress tracking
-    const result = await client.runTestCase(loginTest, progressHandler);
-
-    // Parse and display results
-    console.log(client.parseTestRun(result));
+async function main() {
+    const loginTest = new TestCase({
+        id: "login-test", // any ID you want
+        name: "Basic Login Test", // friendly name
+        url: "https://qa-bench.com" // target site url
+    });
+    
+    loginTest.addStep("Login to the app")
+        .check("Can see dashboard") // natural language assertion
+        .data({ username: process.env.TEST_USER_EMAIL! }) // plaintext data
+        .secureData({ password: process.env.TEST_USER_PASSWORD! }) // encrypted data
+    
+    console.log(loginTest);
+    
+    // start the test case!
+    await loginTest.run();
 }
 
-runLoginTest().catch(console.error);
+main();

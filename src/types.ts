@@ -61,5 +61,5 @@ export interface TestRun {
     start_screenshot_url?: string;
     is_done: boolean;
     aborted: boolean;
-    aborted_reason?: string;
+    aborted_reason?: "crash" | "time_limit" | "action_limit";
 }
