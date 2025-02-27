@@ -2,6 +2,7 @@ import { TestCase } from './testCase';
 import { z } from 'zod';
 import { TestRun as TestRunData, Problem as ProblemData } from './types'; // move this?
 import crypto from 'crypto';
+import { Magnitude } from './client';
 
 export class Problem {
     // Wrapper class for reported problems
@@ -92,13 +93,85 @@ export class TestRunResult {
 export class TestRunner {
     private testCase: TestCase;
     private runningPromise: Promise<TestRunResult>;
+    private pollTimeout: NodeJS.Timeout | null = null;
+    private resolveRunningPromise!: (result: TestRunResult) => void;
+    private rejectRunningPromise!: (error: any) => void;
+    private runId: string | null = null;
+    private progressCallback: ((progress: any) => void) | null = null;
+    private problemCallback: ((problem: any) => void) | null = null;
 
     constructor(testCase: TestCase) {
         // Start test case
         this.testCase = testCase;
-        this.runningPromise = this.execute();
+        //this.runningPromise = this.execute();
+        this.runningPromise = new Promise<TestRunResult>((resolve, reject) => {
+            this.resolveRunningPromise = resolve;
+            this.rejectRunningPromise = reject;
+        });
+
+        this.start();
     }
 
+    private updateRun(run: TestRunResult) {
+
+    }
+
+    private async start() {
+        // Make API call to start test execution
+        console.log("Test Case:", this.testCase.toData());
+        const runData = await Magnitude.getInstance().startTestRun(this.testCase.toData());
+        this.runId = runData.id;
+        this.updateRun(new TestRunResult(runData));
+        
+        // Poll immediately (and schedule additional)
+        await this.poll();
+        //this.schedulePoll();
+
+        // this.pollInterval = setInterval(() => {
+        //     this.poll();
+        // }, 1000);
+
+        // Cleanup interval when promise resolves or rejects
+        // this.runningPromise.finally(() => {
+        //     if (this.pollTimeout) {
+        //         clearInterval(this.pollTimeout);
+        //         this.pollTimeout = null;
+        //     }
+        // });
+    }
+
+    private schedulePoll() {
+        // Schedule a single poll after the delay
+        this.pollTimeout = setTimeout(() => {
+            this.poll();
+        }, 1000);
+    }
+
+    private async poll() {
+        if (!this.runId) {
+            throw Error("Polling before run started");
+        }
+        // Get the test case results and call any appropriate handlers
+        console.log("Polling...");
+        //const someCondition = Math.random() > 0.8;
+
+        // Call API to get results and make new TestRunResult() around the returned data
+        //result = new TestRunResult();
+        const run = new TestRunResult(await Magnitude.getInstance().getTestRunStatus(this.runId));
+
+        console.log("Run:", run);
+
+        this.updateRun(run);
+
+        if (run.isDone()) {
+            // when test case is totally done we should do this
+            this.resolveRunningPromise(run);
+        } else {
+            this.schedulePoll();
+        }
+    }
+
+    // TODO: call these on poll when appropriate, also change signature
     public onProgress(callback: (progress: any) => void): TestRunner {
         this.progressCallback = callback;
         return this;
@@ -109,27 +182,27 @@ export class TestRunner {
         return this;
     }
 
-    private async execute(): Promise<TestRunResult> {
-        try {
-            // Example implementation
-            for (let i = 0; i < 10; i++) {
-                console.log(i)
-                // Simulate test steps
-                await new Promise(resolve => setTimeout(resolve, 100));
+    // private async execute(): Promise<TestRunResult> {
+    //     try {
+    //         // Example implementation
+    //         for (let i = 0; i < 10; i++) {
+    //             console.log(i)
+    //             // Simulate test steps
+    //             await new Promise(resolve => setTimeout(resolve, 100));
                 
-            //   if (this.progressCallback) {
-            //     this.progressCallback({ step: i, total: 10 });
-            //   }
-            }
+    //         //   if (this.progressCallback) {
+    //         //     this.progressCallback({ step: i, total: 10 });
+    //         //   }
+    //         }
             
-            return { status: "success", message: "All tests passed" };
-            } catch (error) {
-            // if (this.problemCallback) {
-            //   this.problemCallback(error);
-            // }
-            throw error;
-        }
-    }
+    //         return { status: "success", message: "All tests passed" };
+    //         } catch (error) {
+    //         // if (this.problemCallback) {
+    //         //   this.problemCallback(error);
+    //         // }
+    //         throw error;
+    //     }
+    // }
 
     // Enables awaiting the class itself
     then<TResult1 = any, TResult2 = never>(

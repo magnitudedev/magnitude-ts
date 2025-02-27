@@ -2,6 +2,7 @@ import { Magnitude } from './client';
 import { TestRunner } from './testRunner';
 import { TestStepSchema } from './schema';
 import { z } from 'zod';
+import { TestCase as TestCaseData, TestStep as TestStepData } from './types';
 
 class TestStep {
     // Test step builder class
@@ -29,7 +30,7 @@ class TestStep {
         return this;
     }
 
-    public toData(): z.infer<typeof TestStepSchema> {
+    public toData(): TestStepData {
         const testData = [
             ...Object.entries(this.testData).map(([k, v]) => ({ key: k, value: v, sensitive: false })),
             ...Object.entries(this.secureTestData).map(([k, v]) => ({ key: k, value: v, sensitive: true }))
@@ -78,5 +79,14 @@ export class TestCase {
 
         // Create and return a runner
         return new TestRunner(this);
+    }
+
+    public toData(): TestCaseData {
+        return {
+            id: this.id,
+            name: this.name,
+            url: this.url,
+            steps: this.steps.map(step => step.toData())
+        }
     }
 }

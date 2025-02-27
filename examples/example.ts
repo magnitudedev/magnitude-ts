@@ -1,6 +1,6 @@
 import { Magnitude, TestCase } from 'magnitude-ts';
 
-Magnitude.init("foo");
+//Magnitude.init("foo");
 
 async function main() {
     const loginTest = new TestCase({
@@ -11,8 +11,10 @@ async function main() {
     
     loginTest.addStep("Login to the app")
         .check("Can see dashboard") // natural language assertion
-        .data({ username: process.env.TEST_USER_EMAIL! }) // plaintext data
-        .secureData({ password: process.env.TEST_USER_PASSWORD! }) // encrypted data
+        .data({ username: "test-user@magnitude.run" }) // plaintext data
+        .secureData({ password: "test" }) // encrypted data
+        // .data({ username: process.env.TEST_USER_EMAIL! }) // plaintext data
+        // .secureData({ password: process.env.TEST_USER_PASSWORD! }) // encrypted data
     
     console.log(loginTest);
     
