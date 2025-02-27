@@ -34,12 +34,12 @@ export class Magnitude {
         
         api.defaults.headers.common['X-API-Key'] = apiKey;
 
-        api.interceptors.request.use(request => {
-            console.log('Request URL:', request.url);
-            console.log('Request Method:', request.method);
-            console.log('Request Headers:', request.headers);
-            return request;
-        });
+        // api.interceptors.request.use(request => {
+        //     console.log('Request URL:', request.url);
+        //     console.log('Request Method:', request.method);
+        //     console.log('Request Headers:', request.headers);
+        //     return request;
+        // });
 
         this.api = api;
         this.isInitialized = true;

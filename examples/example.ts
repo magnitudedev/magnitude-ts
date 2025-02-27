@@ -11,7 +11,7 @@ async function main() {
     
     loginTest.addStep("Login to the app")
         .check("Can see dashboard") // natural language assertion
-        .data({ username: "test-user@magnitude.run" }) // plaintext data
+        .data({ username: "test@magnitude.run" }) // plaintext data
         .secureData({ password: "test" }) // encrypted data
         // .data({ username: process.env.TEST_USER_EMAIL! }) // plaintext data
         // .secureData({ password: process.env.TEST_USER_PASSWORD! }) // encrypted data
@@ -19,7 +19,9 @@ async function main() {
     console.log(loginTest);
     
     // start the test case!
-    await loginTest.run();
+    await loginTest.run()
+        .onProblem(problem => console.log("Got a problem!", problem))
+        .onProgress(run => console.log("Run progress:", run));
 }
 
 main();

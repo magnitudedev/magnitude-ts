@@ -97,8 +97,10 @@ export class TestRunner {
     private resolveRunningPromise!: (result: TestRunResult) => void;
     private rejectRunningPromise!: (error: any) => void;
     private runId: string | null = null;
-    private progressCallback: ((progress: any) => void) | null = null;
-    private problemCallback: ((problem: any) => void) | null = null;
+    private progressCallback: ((progress: TestRunResult) => void) | null = null;
+    private problemCallback: ((problem: Problem) => void) | null = null;
+    private lastResultHash: string | null = null;
+    private lastProblemCount: number = 0;
 
     constructor(testCase: TestCase) {
         // Start test case
@@ -113,12 +115,32 @@ export class TestRunner {
     }
 
     private updateRun(run: TestRunResult) {
+        // Call any appropriate handlers
+        const runHash = run.getHash();
 
+        if (runHash != this.lastResultHash) {
+            // Different from the last result that we polled
+            if (this.progressCallback) this.progressCallback(run);
+        }
+
+        const problems = run.getProblems();
+
+        const numNewProblems = problems.length - this.lastProblemCount;
+
+        if (numNewProblems > 0 && this.problemCallback) {
+            // Do callback for new problems
+            for (const problem of problems.slice(-numNewProblems)) {
+                this.problemCallback(problem);
+            }
+        }
+
+        this.lastResultHash = runHash;
+        this.lastProblemCount = problems.length;
     }
 
     private async start() {
         // Make API call to start test execution
-        console.log("Test Case:", this.testCase.toData());
+        //console.log("Test Case:", this.testCase.toData());
         const runData = await Magnitude.getInstance().startTestRun(this.testCase.toData());
         this.runId = runData.id;
         this.updateRun(new TestRunResult(runData));
@@ -159,7 +181,7 @@ export class TestRunner {
         //result = new TestRunResult();
         const run = new TestRunResult(await Magnitude.getInstance().getTestRunStatus(this.runId));
 
-        console.log("Run:", run);
+        //console.log("Run:", run);
 
         this.updateRun(run);
 
@@ -172,7 +194,7 @@ export class TestRunner {
     }
 
     // TODO: call these on poll when appropriate, also change signature
-    public onProgress(callback: (progress: any) => void): TestRunner {
+    public onProgress(callback: (run: TestRunResult) => void): TestRunner {
         this.progressCallback = callback;
         return this;
     }
