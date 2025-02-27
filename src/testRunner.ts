@@ -111,9 +111,7 @@ export class TestRunner {
 
         if (run.isDone()) {
             // when test case is totally done we should do this
-            if (this.showDisplay && this.renderer) {
-                this.renderer.stopRendering();
-            }
+            // Don't call stopRendering here, let the promise cleanup handle it
             this.resolveRunningPromise(run);
         } else {
             this.schedulePoll();

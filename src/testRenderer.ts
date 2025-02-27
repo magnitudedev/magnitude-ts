@@ -1,5 +1,6 @@
 import { TestRunResult, Problem } from './dataWrappers';
 import { TestCase } from './testCase';
+import logUpdate from 'log-update';
 
 export class TestRenderer {
     private spinnerFrameIndex: number = 0;
@@ -16,7 +17,6 @@ export class TestRenderer {
      */
     public startRendering(testCase: TestCase): void {
         // Store the test data (might be null initially)
-        //this.lastRun = run;
         this.testCase = testCase;
         this.isActive = true;
         
@@ -49,6 +49,10 @@ export class TestRenderer {
         if (this.lastRun && this.testCase) {
             this.renderFrame();
         }
+        
+        // Just call logUpdate.done() to preserve the last frame
+        // without printing any additional output
+        logUpdate.done();
     }
     
     /**
@@ -67,78 +71,119 @@ export class TestRenderer {
         // Increment spinner frame
         this.spinnerFrameIndex = (this.spinnerFrameIndex + 1) % this.spinnerFrames.length;
         
-        // Clear previous output
-        console.clear();
-        
         // Get current spinner frame
-        const spinner = this.spinnerFrames[this.spinnerFrameIndex] + ' ';
+        const spinner = this.spinnerFrames[this.spinnerFrameIndex];
         
-        // If we don't have test data yet, show a simple loading message
+        // Build output lines
+        const lines: string[] = [];
+        
         if (!this.lastRun) {
-            console.log(`${spinner}Test: ${this.testCase.toData().name}`);
-            console.log("\nTest run starting...");
-            return;
-        }
-        
-        const data = this.lastRun.getRawData();
-        const steps = data.steps;
-        const actions = data.actions || [];
-        const totalSteps = steps.length;
-        const currentStepIndex = steps.findIndex(s => s.status === "pending");
-        const activeStepIndex = currentStepIndex >= 0 ? currentStepIndex : totalSteps - 1;
-        const actionCount = actions.length;
-        
-        // Get current spinner frame (only show if test is still running)
-        const displaySpinner = !this.lastRun.isDone() ? spinner : '';
-        
-        // 1. Display test name and status with spinner
-        console.log(`${displaySpinner}Test: ${this.testCase.toData().name} [${this.lastRun.isDone() ? (this.lastRun.hasPassed() ? "PASSED" : "FAILED") : "RUNNING"}]`);
-        
-        // 2. Progress bar for steps
-        const progressBar = this.createProgressBar(activeStepIndex + 1, totalSteps);
-        console.log(`${progressBar} Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`);
-        
-        // 3. Recent actions list
-        console.log("\nRecent Actions:");
-        const recentActions = actions.slice(-5); // Show last 5 actions
-        if (recentActions.length === 0) {
-            console.log("  No actions yet");
+            // Simple starting message
+            lines.push(`${spinner} Test: ${this.testCase.toData().name}`);
+            lines.push(`Test run starting...`);
         } else {
-            for (const action of recentActions) {
-                console.log(`  - ${action.variant}: ${action.description}`);
-            }
-        }
-        
-        // 4. Steps and checks progress
-        console.log("\nProgress:");
-        for (let i = 0; i < steps.length; i++) {
-            const step = steps[i];
-            const stepStatus = this.getStatusSymbol(step.status);
-            const isCurrentStep = i === activeStepIndex;
+            const data = this.lastRun.getRawData();
+            const steps = data.steps;
+            const actions = data.actions || [];
+            const totalSteps = steps.length;
+            const currentStepIndex = steps.findIndex(s => s.status === "pending");
+            const activeStepIndex = currentStepIndex >= 0 ? currentStepIndex : totalSteps - 1;
+            const actionCount = actions.length;
             
-            console.log(`${isCurrentStep ? "→" : " "} ${stepStatus} Step ${i + 1}: ${step.description}`);
+            // Get current spinner frame (only show if test is still running)
+            const displaySpinner = !this.lastRun.isDone() ? spinner : '';
             
-            // Show checks for this step
-            for (const check of step.checks) {
-                const checkStatus = this.getStatusSymbol(check.status);
-                console.log(`    ${checkStatus} Check: ${check.description}`);
+            // 1. Display test name and status with spinner
+            const status = this.lastRun.isDone() 
+                ? (this.lastRun.hasPassed() ? "PASSED" : "FAILED") 
+                : "RUNNING";
+            lines.push(`${displaySpinner} Test: ${this.testCase.toData().name} [${status}]`);
+            
+            // 2. Progress bar for steps
+            const progressBar = this.createProgressBar(activeStepIndex + 1, totalSteps);
+            lines.push(`${progressBar} Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`);
+            
+            // 3. Recent actions list
+            lines.push(`\nRecent Actions:`);
+            const recentActions = actions.slice(-5); // Show last 5 actions
+            if (recentActions.length === 0) {
+                lines.push(`  No actions yet`);
+            } else {
+                for (const action of recentActions) {
+                    lines.push(`  - ${action.variant}: ${action.description}`);
+                }
+            }
+            
+            // 4. Steps and checks progress
+            lines.push(`\nProgress:`);
+            for (let i = 0; i < steps.length; i++) {
+                const step = steps[i];
+                const stepStatus = this.getStatusSymbol(step.status);
+                const isCurrentStep = i === activeStepIndex;
+                
+                lines.push(`${isCurrentStep ? "→" : " "} ${stepStatus} Step ${i + 1}: ${step.description}`);
+                
+                // Show checks for this step
+                for (const check of step.checks) {
+                    const checkStatus = this.getStatusSymbol(check.status);
+                    lines.push(`    ${checkStatus} Check: ${check.description}`);
+                }
+            }
+            
+            // 5. Problems section at the bottom
+            const problems = this.lastRun.getProblems();
+            if (problems.length > 0) {
+                lines.push(`\nProblems:`);
+                for (const problem of problems) {
+                    const severity = problem.getSeverity();
+                    const severitySymbol = this.getSeveritySymbol(severity);
+                    lines.push(`  ${severitySymbol} ${problem.getTitle()} (${severity})`);
+                    lines.push(`    Expected: ${problem.getExpectedResult()}`);
+                    lines.push(`    Actual: ${problem.getActualResult()}`);
+                }
             }
         }
         
-        // 5. Problems section at the bottom
-        const problems = this.lastRun.getProblems();
-        if (problems.length > 0) {
-            console.log("\nProblems:");
-            for (const problem of problems) {
-                const severity = problem.getSeverity();
-                const severitySymbol = this.getSeveritySymbol(severity);
-                console.log(`  ${severitySymbol} ${problem.getTitle()} (${severity})`);
-                console.log(`    Expected: ${problem.getExpectedResult()}`);
-                console.log(`    Actual: ${problem.getActualResult()}`);
-            }
-        }
+        // Get terminal width (default to 80 if not available)
+        const terminalWidth = process.stdout.columns || 80;
         
-        console.log("\n");
+        // Format lines to respect terminal width without splitting words
+        const formattedLines = lines.map(line => {
+            // If line is shorter than terminal width, return as is
+            if (line.length <= terminalWidth) {
+                return line;
+            }
+            
+            // For longer lines, we need to wrap them
+            // This is a simple implementation that doesn't split words
+            let result = '';
+            let currentLine = '';
+            
+            // Split by words
+            const words = line.split(' ');
+            
+            for (const word of words) {
+                // If adding this word would exceed terminal width
+                if ((currentLine + word).length + 1 > terminalWidth) {
+                    // Add current line to result and start a new line
+                    result += (result ? '\n' : '') + currentLine;
+                    currentLine = word;
+                } else {
+                    // Add word to current line
+                    currentLine += (currentLine ? ' ' : '') + word;
+                }
+            }
+            
+            // Add the last line
+            if (currentLine) {
+                result += (result ? '\n' : '') + currentLine;
+            }
+            
+            return result;
+        });
+        
+        // Update the display with all formatted lines joined
+        logUpdate(formattedLines.join('\n'));
     }
     
     private createProgressBar(current: number, total: number): string {
