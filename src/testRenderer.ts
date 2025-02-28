@@ -1,6 +1,11 @@
 import { TestRunResult, Problem } from './dataWrappers';
 import { TestCase } from './testCase';
 import logUpdate from 'log-update';
+import chalk from 'chalk';
+
+//const magnitudeBlue = chalk.hex('#0369a1');
+const magnitudeBlue = chalk.hex('#0369a1');
+const brightMagnitudeBlue = chalk.hex('#42bafb');
 
 export class TestRenderer {
     private spinnerFrameIndex: number = 0;
@@ -105,28 +110,28 @@ export class TestRenderer {
             
             // 1. Display test name and status with spinner
             const status = this.lastRun.isDone() 
-                ? (this.lastRun.hasPassed() ? "PASSED" : "FAILED") 
-                : "RUNNING";
+                ? (this.lastRun.hasPassed() ? chalk.greenBright("[PASSED]") : chalk.redBright("[FAILED]")) 
+                : brightMagnitudeBlue("[RUNNING]");
 
             const elapsedTime = this.formatElapsedTime(Date.now() - this.startTime);
 
-            lines.push(`${displaySpinner} [${status}] ⏱ ${elapsedTime} ${this.testCase.toData().name} | Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`);
+            lines.push(`${displaySpinner} ${status} ${this.testCase.toData().name} ` + chalk.blackBright(`⏱ ${elapsedTime} | Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`));
 
             //const url = `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${data.id}`;
-            lines.push(`⚭ ${this.lastRun.getUrl()}`);
+            lines.push(magnitudeBlue(`⚭ ${this.lastRun.getUrl()}`));
             
             // 2. Progress bar for steps
             // const progressBar = this.createProgressBar(activeStepIndex + 1, totalSteps);
             // lines.push(`${progressBar} Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`);
 
             // 3. Steps and checks progress
-            lines.push(`\nProgress:`);
+            lines.push(brightMagnitudeBlue(`\nProgress:`));
             for (let i = 0; i < steps.length; i++) {
                 const step = steps[i];
                 const stepStatus = this.getStatusSymbol(step.status);
                 const isCurrentStep = i === activeStepIndex;
                 
-                lines.push(`${isCurrentStep ? ">" : " "} ${stepStatus} Step ${i + 1}: ${step.description}`);
+                lines.push(`${isCurrentStep ? magnitudeBlue(">") : " "} ${stepStatus} Step ${i + 1}: ${step.description}`);
                 
                 // Show checks for this step
                 for (const check of step.checks) {
@@ -136,25 +141,25 @@ export class TestRenderer {
             }
             
             // Actions
-            lines.push(`\nActions:`);
+            lines.push(brightMagnitudeBlue(`\nActions:`));
             if (actions.length === 0) {
                 lines.push(`  No actions yet`);
             } else {
                 for (const action of actions) {
-                    lines.push(`  ${this.getActionSymbol(action.variant)} ${action.variant.toUpperCase()}: ${action.description}`);
+                    lines.push("  " + magnitudeBlue(`${this.getActionSymbol(action.variant)} ${action.variant.toUpperCase()}`) + `: ${action.description}`);
                 }
             }
             
             // 5. Problems section at the bottom
             const problems = this.lastRun.getProblems();
             if (problems.length > 0) {
-                lines.push(`\nProblems:`);
+                lines.push(brightMagnitudeBlue(`\nProblems:`));
                 for (const problem of problems) {
                     const severity = problem.getSeverity();
                     //const severitySymbol = this.getSeveritySymbol(severity);
-                    lines.push(`  ${severity.toUpperCase()} Severity: ${problem.getTitle()} `);
-                    lines.push(`    Expected: ${problem.getExpectedResult()}`);
-                    lines.push(`    Actual: ${problem.getActualResult()}`);
+                    lines.push(`  ${this.getSeverityDescriptor(severity)}: ${problem.getTitle()} `);
+                    lines.push(`    ${magnitudeBlue('Expected')}: ${problem.getExpectedResult()}`);
+                    lines.push(`    ${magnitudeBlue('Actual')}: ${problem.getActualResult()}`);
                 }
             }
         }
@@ -200,36 +205,7 @@ export class TestRenderer {
         // Update the display with all formatted lines joined
         logUpdate(formattedLines.join('\n'));
     }
-    
-    // private createProgressBar(current: number, total: number): string {
-    //     const width = 30;
-    //     const filled = Math.floor((current / total) * width);
-    //     const empty = width - filled;
-        
-    //     return `[${"=".repeat(filled)}>${" ".repeat(Math.max(0, empty))}]`;
-    // }
-
-    // private getActionSymbol(variant: "load" | "click" | "hover" | "type" | "scroll" | "wait" | "back") {
-    //     switch (variant) {
-    //         case "load":
-    //             return "⏳"; // Hourglass for loading
-    //         case "click":
-    //             return "🖱️"; // Pointing finger for clicking
-    //         case "hover":
-    //             return "🖱️"; // Mouse cursor for hovering
-    //         case "type":
-    //             return "🎹"; // Keyboard for typing
-    //         case "scroll":
-    //             return "📜"; // Scroll for scrolling
-    //         case "wait":
-    //             return "⏱️"; // Stopwatch for waiting
-    //         case "back":
-    //             return "🔙"; // Left arrow for going back
-    //         default:
-    //             return "❓"; // Question mark for unknown action
-    //     }
-    // }
-
+   
     private getActionSymbol(variant: "load" | "click" | "hover" | "type" | "scroll" | "wait" | "back") {
         switch (variant) {
             case "load":
@@ -253,29 +229,21 @@ export class TestRenderer {
     
     private getStatusSymbol(status: "pending" | "passed" | "failed"): string {
         switch (status) {
-            case "passed": return "✓";
-            case "failed": return "✗";
-            case "pending": return "⋯";
+            case "passed": return chalk.greenBright("✓");
+            case "failed": return chalk.redBright("✗");
+            case "pending": return chalk.blackBright("⋯");
             default: return "?";
         }
     }
-    // private getStatusSymbol(status: "pending" | "passed" | "failed"): string {
-    //     switch (status) {
-    //         case "passed": return "✅";
-    //         case "failed": return "❌";
-    //         case "pending": return "⏳";
-    //         default: return "❓";
-    //     }
-    // }
-    
-    private getSeveritySymbol(severity: "critical" | "high" | "medium" | "low" | "cosmetic"): string {
+
+    private getSeverityDescriptor(severity: "critical" | "high" | "medium" | "low" | "cosmetic"): string {
         switch (severity) {
-            case "critical": return "🔴";
-            case "high": return "🟠";
-            case "medium": return "🟡";
-            case "low": return "⚪";
-            case "cosmetic": return "🔵";
-            default: return "⚪";
+            case "critical": return chalk.hex('#FF0000')("[!!!] Critical");
+            case "high": return chalk.hex('#FF4500')("[!!] High");
+            case "medium": return chalk.hex('#FFA500')("[!] Medium");
+            case "low": return chalk.hex('#FFFF00')("[*] Low");
+            case "cosmetic": return chalk.hex('#FFFF00')("Cosmetic");
+            default: return chalk.hex('#FFFFFF')("Unknown");
         }
     }
 }

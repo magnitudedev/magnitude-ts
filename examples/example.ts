@@ -1,4 +1,5 @@
 import { Magnitude, TestCase } from 'magnitude-ts';
+//import chalk from 'chalk';
 
 //Magnitude.init("foo");
 
@@ -28,3 +29,19 @@ async function main() {
 }
 
 main();
+// console.log(chalk.hex('#ff0000')("Critical")); // Custom hex red for critical
+// console.log(chalk.hex('#FF4040')("High"));     // Hex bright red for high
+// console.log(chalk.hex('#FF0000')("Medium"));   // Hex standard red for medium
+// console.log(chalk.hex('#FFFF00')("Low"));
+
+// Critical - Bright Red
+// console.log(chalk.hex('#FF0000')("Critical"));
+
+// // High - Orange Red
+// console.log(chalk.hex('#FF4500')("High"));
+
+// // Medium - Orange
+// console.log(chalk.hex('#FFA500')("Medium"));
+
+// // Low - Yellow
+// console.log(chalk.hex('#FFFF00')("Low"));
