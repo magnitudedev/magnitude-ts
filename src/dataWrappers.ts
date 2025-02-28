@@ -1,4 +1,5 @@
 import { TestRun as TestRunData, Problem as ProblemData } from './types';
+import { TestCase } from './testCase';
 import crypto from 'crypto';
 
 export class Problem {
@@ -38,13 +39,25 @@ export class Problem {
 export class TestRunResult {
     // Wrapper class for returned test data
     private data: TestRunData;
+    private testCase: TestCase;
 
-    constructor(data: TestRunData) {
+    constructor(data: TestRunData, testCase: TestCase) {
         this.data = data;
+        this.testCase = testCase;
     }
 
-    getId() {
-        return this.data.id;
+
+
+    // getId() {
+    //     // Get internal run ID
+    //     return this.data.id;
+    // }
+    getUrl() {
+        if (!this.testCase.getInternalId()) {
+            // Should be impossible
+            throw Error("URL not available until test run started");
+        }
+        return `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${this.data.id}`
     }
 
     getRawData() {

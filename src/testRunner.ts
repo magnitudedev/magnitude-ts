@@ -73,8 +73,8 @@ export class TestRunner {
         // INTERNAL run CUID2
         this.runId = runData.id;
         this.testCase.setInternalId(runData.test_case_id);
-        
-        this.updateRun(new TestRunResult(runData));
+
+        this.updateRun(new TestRunResult(runData, this.testCase));
         
         
         // Poll immediately (and schedule additional)
@@ -108,7 +108,10 @@ export class TestRunner {
         // Get the test case results and call any appropriate handlers
 
         // Call API to get results and make new TestRunResult() around the returned data
-        const run = new TestRunResult(await Magnitude.getInstance().getTestRunStatus(this.runId));
+        const run = new TestRunResult(
+            await Magnitude.getInstance().getTestRunStatus(this.runId),
+            this.testCase
+        );
 
         //console.log("Run:", run);
 

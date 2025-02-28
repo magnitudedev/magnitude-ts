@@ -99,8 +99,8 @@ export class TestRenderer {
                 : "RUNNING";
             lines.push(`${displaySpinner} Test: ${this.testCase.toData().name} [${status}]`);
 
-            const url = `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${this.lastRun.getId()}`;
-            lines.push(`🔗 ${url}`);
+            //const url = `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${data.id}`;
+            lines.push(`🔗 ${this.lastRun.getUrl()}`);
             
             // 2. Progress bar for steps
             const progressBar = this.createProgressBar(activeStepIndex + 1, totalSteps);
