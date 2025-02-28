@@ -9,6 +9,7 @@ export class TestRenderer {
     private lastRun: TestRunResult | null = null;
     private testCase: TestCase | null = null;
     private isActive: boolean = false;
+    private startTime: number = 0;
     
     constructor() {}
     
@@ -19,6 +20,7 @@ export class TestRenderer {
         // Store the test data (might be null initially)
         this.testCase = testCase;
         this.isActive = true;
+        this.startTime = Date.now();
         
         // Start the render loop if not already running
         if (!this.renderInterval) {
@@ -61,6 +63,14 @@ export class TestRenderer {
     public updateData(run: TestRunResult): void {
         this.lastRun = run;
     }
+
+    private formatElapsedTime(ms: number): string {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+
+        return `${hours > 0 ? hours.toString().padStart(2, '0') + ':' : ''}${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+    }
     
     /**
      * Render a single frame of the display
@@ -97,39 +107,41 @@ export class TestRenderer {
             const status = this.lastRun.isDone() 
                 ? (this.lastRun.hasPassed() ? "PASSED" : "FAILED") 
                 : "RUNNING";
-            lines.push(`${displaySpinner} Test: ${this.testCase.toData().name} [${status}]`);
+
+            const elapsedTime = this.formatElapsedTime(Date.now() - this.startTime);
+
+            lines.push(`${displaySpinner} [${status}] ⏱ ${elapsedTime} ${this.testCase.toData().name} | Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`);
 
             //const url = `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${data.id}`;
-            lines.push(`🔗 ${this.lastRun.getUrl()}`);
+            lines.push(`⚭ ${this.lastRun.getUrl()}`);
             
             // 2. Progress bar for steps
-            const progressBar = this.createProgressBar(activeStepIndex + 1, totalSteps);
-            lines.push(`${progressBar} Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`);
-            
-            // 3. Recent actions list
-            lines.push(`\nRecent Actions:`);
-            const recentActions = actions.slice(-5); // Show last 5 actions
-            if (recentActions.length === 0) {
-                lines.push(`  No actions yet`);
-            } else {
-                for (const action of recentActions) {
-                    lines.push(`  - ${action.variant}: ${action.description}`);
-                }
-            }
-            
-            // 4. Steps and checks progress
+            // const progressBar = this.createProgressBar(activeStepIndex + 1, totalSteps);
+            // lines.push(`${progressBar} Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`);
+
+            // 3. Steps and checks progress
             lines.push(`\nProgress:`);
             for (let i = 0; i < steps.length; i++) {
                 const step = steps[i];
                 const stepStatus = this.getStatusSymbol(step.status);
                 const isCurrentStep = i === activeStepIndex;
                 
-                lines.push(`${isCurrentStep ? "→" : " "} ${stepStatus} Step ${i + 1}: ${step.description}`);
+                lines.push(`${isCurrentStep ? ">" : " "} ${stepStatus} Step ${i + 1}: ${step.description}`);
                 
                 // Show checks for this step
                 for (const check of step.checks) {
                     const checkStatus = this.getStatusSymbol(check.status);
                     lines.push(`    ${checkStatus} Check: ${check.description}`);
+                }
+            }
+            
+            // Actions
+            lines.push(`\nActions:`);
+            if (actions.length === 0) {
+                lines.push(`  No actions yet`);
+            } else {
+                for (const action of actions) {
+                    lines.push(`  ${this.getActionSymbol(action.variant)} ${action.variant.toUpperCase()}: ${action.description}`);
                 }
             }
             
@@ -139,8 +151,8 @@ export class TestRenderer {
                 lines.push(`\nProblems:`);
                 for (const problem of problems) {
                     const severity = problem.getSeverity();
-                    const severitySymbol = this.getSeveritySymbol(severity);
-                    lines.push(`  ${severitySymbol} ${problem.getTitle()} (${severity})`);
+                    //const severitySymbol = this.getSeveritySymbol(severity);
+                    lines.push(`  ${severity.toUpperCase()} Severity: ${problem.getTitle()} `);
                     lines.push(`    Expected: ${problem.getExpectedResult()}`);
                     lines.push(`    Actual: ${problem.getActualResult()}`);
                 }
@@ -189,12 +201,54 @@ export class TestRenderer {
         logUpdate(formattedLines.join('\n'));
     }
     
-    private createProgressBar(current: number, total: number): string {
-        const width = 30;
-        const filled = Math.floor((current / total) * width);
-        const empty = width - filled;
+    // private createProgressBar(current: number, total: number): string {
+    //     const width = 30;
+    //     const filled = Math.floor((current / total) * width);
+    //     const empty = width - filled;
         
-        return `[${"=".repeat(filled)}>${" ".repeat(Math.max(0, empty))}]`;
+    //     return `[${"=".repeat(filled)}>${" ".repeat(Math.max(0, empty))}]`;
+    // }
+
+    // private getActionSymbol(variant: "load" | "click" | "hover" | "type" | "scroll" | "wait" | "back") {
+    //     switch (variant) {
+    //         case "load":
+    //             return "⏳"; // Hourglass for loading
+    //         case "click":
+    //             return "🖱️"; // Pointing finger for clicking
+    //         case "hover":
+    //             return "🖱️"; // Mouse cursor for hovering
+    //         case "type":
+    //             return "🎹"; // Keyboard for typing
+    //         case "scroll":
+    //             return "📜"; // Scroll for scrolling
+    //         case "wait":
+    //             return "⏱️"; // Stopwatch for waiting
+    //         case "back":
+    //             return "🔙"; // Left arrow for going back
+    //         default:
+    //             return "❓"; // Question mark for unknown action
+    //     }
+    // }
+
+    private getActionSymbol(variant: "load" | "click" | "hover" | "type" | "scroll" | "wait" | "back") {
+        switch (variant) {
+            case "load":
+                return "↻"; // Recycling symbol for loading
+            case "click":
+                return "⊙"; // Circled dot for clicking
+            case "hover":
+                return "◉"; // Circled bullet for hovering
+            case "type":
+                return "⌨"; // Keyboard symbol
+            case "scroll":
+                return "↕"; // Up/down arrows for scrolling
+            case "wait":
+                return "◴"; // Clock face for waiting
+            case "back":
+                return "←"; // Left arrow for going back
+            default:
+                return "?"; // Question mark for unknown action
+        }
     }
     
     private getStatusSymbol(status: "pending" | "passed" | "failed"): string {
@@ -205,13 +259,21 @@ export class TestRenderer {
             default: return "?";
         }
     }
+    // private getStatusSymbol(status: "pending" | "passed" | "failed"): string {
+    //     switch (status) {
+    //         case "passed": return "✅";
+    //         case "failed": return "❌";
+    //         case "pending": return "⏳";
+    //         default: return "❓";
+    //     }
+    // }
     
     private getSeveritySymbol(severity: "critical" | "high" | "medium" | "low" | "cosmetic"): string {
         switch (severity) {
             case "critical": return "🔴";
             case "high": return "🟠";
             case "medium": return "🟡";
-            case "low": return "🟢";
+            case "low": return "⚪";
             case "cosmetic": return "🔵";
             default: return "⚪";
         }
