@@ -43,6 +43,10 @@ export class TestRunResult {
         this.data = data;
     }
 
+    getId() {
+        return this.data.id;
+    }
+
     getRawData() {
         return this.data;
     }

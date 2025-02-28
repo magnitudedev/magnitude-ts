@@ -16,9 +16,9 @@ async function main() {
         // .data({ username: process.env.TEST_USER_EMAIL! }) // plaintext data
         // .secureData({ password: process.env.TEST_USER_PASSWORD! }) // encrypted data
     
-    console.log(loginTest);
+    //console.log(loginTest);
 
-
+    // const result = await loginTest.run();
     await loginTest.run().show();
     
     // start the test case!

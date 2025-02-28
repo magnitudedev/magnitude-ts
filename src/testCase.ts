@@ -54,13 +54,21 @@ export interface TestCaseOptions {
   }
 
 export class TestCase {
+    
     private id: string;
+
+    private internalId: string | null = null;
+
+    // Internal CUID2
+    // User-defined ID
+    //private sdk_id: string;
     private name: string;
     private url: string;
     private steps: TestStep[] = [];
 
     constructor(options: TestCaseOptions) {
         this.id = options.id;
+        //this.sdk_id = options.id;
         this.name = options.name ?? options.id;
         this.url = options.url;
     }
@@ -89,4 +97,18 @@ export class TestCase {
             steps: this.steps.map(step => step.toData())
         }
     }
+
+    public getId(): string {
+        return this.id;
+    }
+
+    public getInternalId(): string | null {
+        return this.internalId;
+    }
+
+    public setInternalId(id: string) {
+        this.internalId = id;
+    }
+
+    // get sdk id
 }

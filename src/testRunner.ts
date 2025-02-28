@@ -14,6 +14,7 @@ export class TestRunner {
     private resolveRunningPromise!: (result: TestRunResult) => void;
     private rejectRunningPromise!: (error: any) => void;
     private runId: string | null = null;
+    private startCallback: ((run: TestRunResult) => void) | null = null;
     private progressCallback: ((progress: TestRunResult) => void) | null = null;
     private problemCallback: ((problem: Problem) => void) | null = null;
     private lastResultHash: string | null = null;
@@ -69,8 +70,12 @@ export class TestRunner {
         // Make API call to start test execution
         //console.log("Test Case:", this.testCase.toData());
         const runData = await Magnitude.getInstance().startTestRun(this.testCase.toData());
+        // INTERNAL run CUID2
         this.runId = runData.id;
+        this.testCase.setInternalId(runData.test_case_id);
+        
         this.updateRun(new TestRunResult(runData));
+        
         
         // Poll immediately (and schedule additional)
         await this.poll();
@@ -118,6 +123,10 @@ export class TestRunner {
         }
     }
 
+    private callStartCallback(run: TestRunResult) {
+        if (this.startCallback) this.startCallback(run);
+    }
+
     private callProgressCallback(run: TestRunResult) {
         // If display is enabled, update the renderer with new data
         if (this.showDisplay && this.renderer) {
@@ -132,7 +141,12 @@ export class TestRunner {
         if (this.problemCallback) this.problemCallback(problem);
     }
 
-    // TODO: call these on poll when appropriate, also change signature
+    public onStart(callback: (run: TestRunResult) => void): TestRunner {
+        // Called when the run API returns
+        this.startCallback = callback;
+        return this;
+    }
+
     public onProgress(callback: (run: TestRunResult) => void): TestRunner {
         this.progressCallback = callback;
         return this;
@@ -187,5 +201,5 @@ export class TestRunner {
     ): Promise<TResult1 | TResult2> {
         // Return the already running promise with the callbacks attached
         return this.runningPromise.then(onfulfilled, onrejected);
-    }    
+    }
 }

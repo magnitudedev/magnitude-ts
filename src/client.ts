@@ -12,7 +12,7 @@ export class Magnitude {
         //this.apiKey = process.env.MAGNITUDE_API_KEY || null;
         const apiKey = process.env.MAGNITUDE_API_KEY || null;
 
-        console.log("API KEY:", apiKey);
+        //console.log("API KEY:", apiKey);
         // if (apiKey) {
         //     Magnitude.init(apiKey);
         // }

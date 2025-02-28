@@ -17,7 +17,9 @@ export interface TestStep {
 }
 
 export interface TestCase {
+    // User-defined SDK id e.g. login-test
     id: string;
+    //sdk_id: string;
     name: string;
     url: string;
     steps: TestStep[];
@@ -55,6 +57,7 @@ export interface TestStepResult {
 
 export interface TestRun {
     id: string;
+    test_case_id: string;
     created_at: string;
     actions: TestAction[];
     steps: TestStepResult[];

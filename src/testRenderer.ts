@@ -98,6 +98,9 @@ export class TestRenderer {
                 ? (this.lastRun.hasPassed() ? "PASSED" : "FAILED") 
                 : "RUNNING";
             lines.push(`${displaySpinner} Test: ${this.testCase.toData().name} [${status}]`);
+
+            const url = `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${this.lastRun.getId()}`;
+            lines.push(`🔗 ${url}`);
             
             // 2. Progress bar for steps
             const progressBar = this.createProgressBar(activeStepIndex + 1, totalSteps);

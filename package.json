@@ -41,12 +41,12 @@
   "author": "Tom Greenwald",
   "license": "MIT",
   "devDependencies": {
-    "@types/log-update": "^3.1.0",
     "@types/node": "^22.13.4",
     "pkgroll": "^2.10.0",
     "typescript": "~5.7.2"
   },
   "dependencies": {
+    "@types/log-update": "^3.1.0",
     "axios": "^1.7.9",
     "log-update": "^6.1.0",
     "zod": "^3.24.2"
