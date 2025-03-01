@@ -9,6 +9,7 @@ class TestStep {
     private description: string;
     private checks: string[] = [];
     private testData: Record<string, string> = {};
+    private freeformTestData: string[] = [];
     private secureTestData: Record<string, string> = {};
 
     constructor(description: string) {
@@ -20,8 +21,16 @@ class TestStep {
         return this;
     }
 
-    public data(data: Record<string, string>): TestStep {
-        this.testData = { ...this.testData, ...data };
+    public data(data: Record<string, string> | string): TestStep {
+        /**
+         * Pass in a string for a freeform description of data,
+         * or arbitrary key/value pairs.
+         */
+        if (typeof data === "string") {
+            this.freeformTestData.push(data);
+        } else {
+            this.testData = { ...this.testData, ...data };
+        }
         return this;
     }
 
@@ -41,7 +50,7 @@ class TestStep {
             checks: this.checks,
             test_data: {
                 data: testData,
-                other: "" // FIXME: What should be the pattern for providing this if any?
+                other: this.freeformTestData.join("\n")
             },
         }
     }

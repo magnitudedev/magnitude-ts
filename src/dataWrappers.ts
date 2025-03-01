@@ -46,12 +46,6 @@ export class TestRunResult {
         this.testCase = testCase;
     }
 
-
-
-    // getId() {
-    //     // Get internal run ID
-    //     return this.data.id;
-    // }
     getUrl() {
         if (!this.testCase.getInternalId()) {
             // Should be impossible

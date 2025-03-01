@@ -57,27 +57,4 @@ function isLocalUrl(url: string): boolean {
     }
 }
 
-// // Example usage
-// const testUrls = [
-//     'http://localhost:3000/path',
-//     'https://test.localhost/api',
-//     'http://127.0.0.1:8080',
-//     'http://0.0.0.0:4000',
-//     'http://192.168.1.1',
-//     'http://10.0.0.1',
-//     'http://172.16.0.1',
-//     'http://172.20.10.5',
-//     'http://169.254.10.15',
-//     'http://[::1]:8000',
-//     'http://[fe80::1ff:fe23:4567:890a]',
-//     'http://[::ffff:127.0.0.1]',
-//     'https://example.com',
-//     'http://192.169.1.1',
-//     'https://172.32.0.1'
-// ];
-
-// testUrls.forEach(url => {
-//   console.log(`${url} is ${isLocalUrl(url) ? 'local' : 'not local'}`);
-// });
-
 export { isLocalUrl, isLocalIp };

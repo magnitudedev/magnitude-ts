@@ -175,48 +175,48 @@ export class TestRenderer {
             }
         }
         
-        // Get terminal width (default to 80 if not available)
-        const terminalWidth = process.stdout.columns || 80;
+        // // Get terminal width (default to 80 if not available)
+        // const terminalWidth = process.stdout.columns || 80;
         
-        // Format lines to respect terminal width without splitting words
-        const formattedLines = lines.map(line => {
-            // If line is shorter than terminal width, return as is
-            if (line.length <= terminalWidth) {
-                return line;
-            }
+        // // Format lines to respect terminal width without splitting words
+        // const formattedLines = lines.map(line => {
+        //     // If line is shorter than terminal width, return as is
+        //     if (line.length <= terminalWidth) {
+        //         return line;
+        //     }
             
-            // For longer lines, we need to wrap them
-            // This is a simple implementation that doesn't split words
-            let result = '';
-            let currentLine = '';
+        //     // For longer lines, we need to wrap them
+        //     // This is a simple implementation that doesn't split words
+        //     let result = '';
+        //     let currentLine = '';
             
-            // Split by words
-            const words = line.split(' ');
+        //     // Split by words
+        //     const words = line.split(' ');
             
-            for (const word of words) {
-                // If adding this word would exceed terminal width
-                if ((currentLine + word).length + 1 > terminalWidth) {
-                    // Add current line to result and start a new line
-                    result += (result ? '\n' : '') + currentLine;
-                    currentLine = word;
-                } else {
-                    // Add word to current line
-                    currentLine += (currentLine ? ' ' : '') + word;
-                }
-            }
+        //     for (const word of words) {
+        //         // If adding this word would exceed terminal width
+        //         if ((currentLine + word).length + 1 > terminalWidth) {
+        //             // Add current line to result and start a new line
+        //             result += (result ? '\n' : '') + currentLine;
+        //             currentLine = word;
+        //         } else {
+        //             // Add word to current line
+        //             currentLine += (currentLine ? ' ' : '') + word;
+        //         }
+        //     }
             
-            // Add the last line
-            if (currentLine) {
-                result += (result ? '\n' : '') + currentLine;
-            }
+        //     // Add the last line
+        //     if (currentLine) {
+        //         result += (result ? '\n' : '') + currentLine;
+        //     }
             
-            return result;
-        });
+        //     return result;
+        // });
 
         //console.log(formattedLines);
         
         // Update the display with all formatted lines joined
-        logUpdate(formattedLines.join('\n'));
+        logUpdate(lines.join('\n'));
     }
    
     private getActionSymbol(variant: "load" | "click" | "hover" | "type" | "scroll" | "wait" | "back") {

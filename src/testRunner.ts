@@ -206,31 +206,9 @@ export class TestRunner {
         return this;
     }
 
-    // private async execute(): Promise<TestRunResult> {
-    //     try {
-    //         // Example implementation
-    //         for (let i = 0; i < 10; i++) {
-    //             console.log(i)
-    //             // Simulate test steps
-    //             await new Promise(resolve => setTimeout(resolve, 100));
-                
-    //         //   if (this.progressCallback) {
-    //         //     this.progressCallback({ step: i, total: 10 });
-    //         //   }
-    //         }
-            
-    //         return { status: "success", message: "All tests passed" };
-    //         } catch (error) {
-    //         // if (this.problemCallback) {
-    //         //   this.problemCallback(error);
-    //         // }
-    //         throw error;
-    //     }
-    // }
-
     // Enables awaiting the class itself
-    then<TResult1 = any, TResult2 = never>(
-        onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | null,
+    then<TResult1 = TestRunResult, TResult2 = never>(
+        onfulfilled?: ((value: TestRunResult) => TResult1 | PromiseLike<TResult1>) | null,
         onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
     ): Promise<TResult1 | TResult2> {
         // Return the already running promise with the callbacks attached
