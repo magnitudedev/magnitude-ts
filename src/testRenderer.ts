@@ -106,8 +106,44 @@ export class TestRenderer {
             const steps = data.steps;
             const actions = data.actions || [];
             const totalSteps = steps.length;
-            const currentStepIndex = steps.findIndex(s => s.status === "pending");
-            const activeStepIndex = currentStepIndex >= 0 ? currentStepIndex : totalSteps - 1;
+            
+            // Find the first pending item (step or check)
+            let firstPendingItemFound = false;
+            let activeStepIndex = -1;
+            let activeCheckIndex = -1;
+            let activeStepWithCheck = -1;
+            
+            // First, find the active step and check indexes
+            for (let i = 0; i < steps.length; i++) {
+                const step = steps[i];
+                
+                // Check if this step is pending
+                if (step.status === "pending" && !firstPendingItemFound) {
+                    activeStepIndex = i;
+                    firstPendingItemFound = true;
+                    break;
+                }
+                
+                // Check if any checks in this step are pending
+                for (let j = 0; j < step.checks.length; j++) {
+                    if (step.checks[j].status === "pending" && !firstPendingItemFound) {
+                        activeStepWithCheck = i;
+                        activeCheckIndex = j;
+                        firstPendingItemFound = true;
+                        break;
+                    }
+                }
+                
+                if (firstPendingItemFound) {
+                    break;
+                }
+            }
+            
+            // If no pending items were found, use the last step
+            if (activeStepIndex === -1 && activeCheckIndex === -1) {
+                activeStepIndex = totalSteps - 1;
+            }
+            
             const actionCount = actions.length;
             
             // Get current spinner frame (only show if test is still running)
@@ -119,8 +155,9 @@ export class TestRenderer {
                 : brightMagnitudeBlue("[RUNNING]");
 
             const elapsedTime = this.formatElapsedTime(Date.now() - this.startTime);
-
-            lines.push(`${displaySpinner}${status} ${this.testCase.toData().name} ` + chalk.blackBright(`⏱ ${elapsedTime} | Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`));
+            const currentStep = activeCheckIndex !== -1 ? activeStepWithCheck : activeStepIndex;
+            
+            lines.push(`${displaySpinner}${status} ${this.testCase.toData().name} ` + chalk.blackBright(`⏱ ${elapsedTime} | Step ${currentStep + 1}/${totalSteps} | Actions: ${actionCount}`));
             
             if (this.testCase.getTunnelUrl()) {
                 const localUrl = this.testCase.getUrl()
@@ -130,10 +167,6 @@ export class TestRenderer {
 
             //const url = `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${data.id}`;
             lines.push(magnitudeBlue(`⚭ Link: ${this.lastRun.getUrl()}`));
-
-            // 2. Progress bar for steps
-            // const progressBar = this.createProgressBar(activeStepIndex + 1, totalSteps);
-            // lines.push(`${progressBar} Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`);
 
             // 3. Steps and checks progress
             lines.push(brightMagnitudeBlue(`\nProgress:`));
@@ -145,9 +178,12 @@ export class TestRenderer {
                 lines.push(`${isCurrentStep ? magnitudeBlue(">") : " "} ${stepStatus} Step ${i + 1}: ${step.description}`);
                 
                 // Show checks for this step
-                for (const check of step.checks) {
+                for (let j = 0; j < step.checks.length; j++) {
+                    const check = step.checks[j];
                     const checkStatus = this.getStatusSymbol(check.status);
-                    lines.push(`    ${checkStatus} Check: ${check.description}`);
+                    const isCurrentCheck = i === activeStepWithCheck && j === activeCheckIndex;
+                    
+                    lines.push(`    ${isCurrentCheck ? magnitudeBlue(">") : " "} ${checkStatus} Check: ${check.description}`);
                 }
             }
             
@@ -174,46 +210,6 @@ export class TestRenderer {
                 }
             }
         }
-        
-        // // Get terminal width (default to 80 if not available)
-        // const terminalWidth = process.stdout.columns || 80;
-        
-        // // Format lines to respect terminal width without splitting words
-        // const formattedLines = lines.map(line => {
-        //     // If line is shorter than terminal width, return as is
-        //     if (line.length <= terminalWidth) {
-        //         return line;
-        //     }
-            
-        //     // For longer lines, we need to wrap them
-        //     // This is a simple implementation that doesn't split words
-        //     let result = '';
-        //     let currentLine = '';
-            
-        //     // Split by words
-        //     const words = line.split(' ');
-            
-        //     for (const word of words) {
-        //         // If adding this word would exceed terminal width
-        //         if ((currentLine + word).length + 1 > terminalWidth) {
-        //             // Add current line to result and start a new line
-        //             result += (result ? '\n' : '') + currentLine;
-        //             currentLine = word;
-        //         } else {
-        //             // Add word to current line
-        //             currentLine += (currentLine ? ' ' : '') + word;
-        //         }
-        //     }
-            
-        //     // Add the last line
-        //     if (currentLine) {
-        //         result += (result ? '\n' : '') + currentLine;
-        //     }
-            
-        //     return result;
-        // });
-
-        //console.log(formattedLines);
         
         // Update the display with all formatted lines joined
         logUpdate(lines.join('\n'));
