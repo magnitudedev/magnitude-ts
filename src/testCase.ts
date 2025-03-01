@@ -118,5 +118,11 @@ export class TestCase {
         this.tunnelUrl = url;
     }
 
+    public getTunnelUrl(): string | null {
+        return this.tunnelUrl;
+    }
+
+
+
     // get sdk id
 }

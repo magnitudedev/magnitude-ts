@@ -111,7 +111,7 @@ export class TestRenderer {
             const actionCount = actions.length;
             
             // Get current spinner frame (only show if test is still running)
-            const displaySpinner = !this.lastRun.isDone() ? spinner : '';
+            const displaySpinner = !this.lastRun.isDone() ? spinner + ' ' : '';
             
             // 1. Display test name and status with spinner
             const status = this.lastRun.isDone() 
@@ -120,11 +120,17 @@ export class TestRenderer {
 
             const elapsedTime = this.formatElapsedTime(Date.now() - this.startTime);
 
-            lines.push(`${displaySpinner} ${status} ${this.testCase.toData().name} ` + chalk.blackBright(`⏱ ${elapsedTime} | Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`));
+            lines.push(`${displaySpinner}${status} ${this.testCase.toData().name} ` + chalk.blackBright(`⏱ ${elapsedTime} | Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`));
+            
+            if (this.testCase.getTunnelUrl()) {
+                const localUrl = this.testCase.getUrl()
+                const tunnelUrl = this.testCase.getTunnelUrl();
+                lines.push(chalk.blackBright(`⛏ Tunnel: ${tunnelUrl} -> ${localUrl}`))
+            }
 
             //const url = `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${data.id}`;
-            lines.push(magnitudeBlue(`⚭ ${this.lastRun.getUrl()}`));
-            
+            lines.push(magnitudeBlue(`⚭ Link: ${this.lastRun.getUrl()}`));
+
             // 2. Progress bar for steps
             // const progressBar = this.createProgressBar(activeStepIndex + 1, totalSteps);
             // lines.push(`${progressBar} Step ${activeStepIndex + 1}/${totalSteps} | Actions: ${actionCount}`);
@@ -206,6 +212,8 @@ export class TestRenderer {
             
             return result;
         });
+
+        //console.log(formattedLines);
         
         // Update the display with all formatted lines joined
         logUpdate(formattedLines.join('\n'));

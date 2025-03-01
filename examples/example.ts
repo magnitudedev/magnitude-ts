@@ -1,5 +1,6 @@
 import { Magnitude, TestCase } from 'magnitude-ts';
 //import chalk from 'chalk';
+import logUpdate from 'log-update';
 
 //Magnitude.init("foo");
 
@@ -10,12 +11,39 @@ async function main() {
     });
     
     loginTest.addStep("Page should show Hello World");
-        //.check("Can see dashboard")
-        // .data({ username: "test@magnitude.run" })
-        // .secureData({ password: "test" })
 
     await loginTest.run().show();
+
+    // const loginTest2 = new TestCase({
+    //     id: "tunnel-test",
+    //     url: "http://localhost:3000"
+    // });
+    
+    // loginTest2.addStep("Page should show Hello World");
+
+    // Promise.all([
+    //     loginTest.run().show(),
+    //     loginTest2.run().show()
+    // ]);
 }
+
+// function sleep(ms: number): Promise<void> {
+//     return new Promise(resolve => setTimeout(resolve, ms));
+// }
+
+// async function main() {
+//     logUpdate("foo");
+//     await sleep(1000);
+//     logUpdate("bar");
+//     await sleep(1000);
+//     logUpdate("foo\nbar\nbaz");
+//     await sleep(1000);
+//     logUpdate("bar");
+//     await sleep(1000);
+//     logUpdate("foo", "\nbar", "\nbaz");
+//     await sleep(1000);
+//     logUpdate("bar");
+// }
 
 // async function main() {
 //     const loginTest = new TestCase({

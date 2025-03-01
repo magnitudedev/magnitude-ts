@@ -81,7 +81,7 @@ export class TestRunner {
 
         if (isLocalUrl(url)) {
             // Establish tunnel
-            console.log("Detected local URL, establishing tunnel...")
+            //console.log("Detected local URL, establishing tunnel...")
 
             // .host includes port, .hostname does not
             const host = new URL(url).host;
@@ -191,6 +191,7 @@ export class TestRunner {
     }
 
     public show(): TestRunner {
+        //console.log("show()")
         // Create renderer if it doesn't exist
         if (!this.renderer) {
             this.renderer = new TestRenderer();
