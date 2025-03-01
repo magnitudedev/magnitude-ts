@@ -15,7 +15,7 @@ async function runTest() {
     loginTest.addStep("Login to the app")
         .check("Can see dashboard") // natural language assertion
         .data({ username: process.env.TEST_USER_EMAIL! }) // plaintext data
-        .secureData({ password: process.env.TEST_USER_PASSWORD! }) // encrypted data
+        .secureData({ password: process.env.TEST_USER_PASSWORD! }); // encrypted data
     
     // start the test case!
     const result = await loginTest.run().show();

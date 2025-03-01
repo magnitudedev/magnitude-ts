@@ -54,6 +54,10 @@ export class TestRunResult {
         return `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${this.data.id}`
     }
 
+    getActions() {
+        return this.data.actions;
+    }
+
     getRawData() {
         return this.data;
     }

@@ -22,7 +22,13 @@ async function runTest() {
         .data("Make up the first 2 values and use defaults for the rest")
         .check("Company added successfully");
     
-    await loginTest.run().show();
+    console.log("Starting test")
+    const result = await loginTest.run()
+        .onStart(run => console.log("View run at:", run.getUrl()))
+        .onProblem(problem => console.log("Identified a problem!", problem.getTitle()))
+        .onProgress(result => console.log("Total actions taken:", result.getActions().length))
+    console.log("Passed?", result.hasPassed());
+    console.log(`Ran into ${result.getProblems().length} problems`);
 }
 
 runTest();

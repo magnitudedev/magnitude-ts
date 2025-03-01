@@ -104,7 +104,10 @@ export class TestRunner {
         this.runId = runData.id;
         this.testCase.setInternalId(runData.test_case_id);
 
-        this.updateRun(new TestRunResult(runData, this.testCase));
+        const run = new TestRunResult(runData, this.testCase);
+        this.updateRun(run);
+        
+        this.callStartCallback(run);
         
         
         // Poll immediately (and schedule additional)
