@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { TestCase as TestCaseData, TestRun as TestRunData } from './types';
+import { validateTestCase } from './schema'
 
 export class Magnitude {
     private static instance: Magnitude | null = null;
@@ -64,6 +65,14 @@ export class Magnitude {
     }
 
     async startTestRun(testCase: TestCaseData): Promise<TestRunData> {
+        /**
+         * Start a test run
+         */
+
+        // Verify test case data structure with zod before making API request
+        // so that user can get specific feedback and not just random 422
+        validateTestCase(testCase);
+
         const response = await this.getApi().post<TestRunData>('/run', testCase);
         return response.data;//.id;
     }
