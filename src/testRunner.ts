@@ -5,6 +5,8 @@ import crypto from 'crypto';
 import { Magnitude } from './client';
 import { TestRenderer } from './testRenderer';
 import { TestRunResult, Problem } from './dataWrappers';
+import { isLocalUrl } from './util';
+import { TunnelClient } from 'bunnel';
 
 
 export class TestRunner {
@@ -21,6 +23,7 @@ export class TestRunner {
     private lastProblemCount: number = 0;
     private showDisplay: boolean = false;
     private renderer: TestRenderer | null = null;
+    private tunnelClient: TunnelClient | null = null;
 
     constructor(testCase: TestCase) {
         // Start test case
@@ -35,6 +38,9 @@ export class TestRunner {
         this.runningPromise.finally(() => {
             if (this.renderer) {
                 this.renderer.stopRendering();
+            }
+            if (this.tunnelClient) {
+                this.tunnelClient.disconnect();
             }
         });
 
@@ -69,6 +75,30 @@ export class TestRunner {
     private async start() {
         // Make API call to start test execution
         //console.log("Test Case:", this.testCase.toData());
+
+        // Establish tunnel if necessary
+        const url = this.testCase.getUrl();
+
+        if (isLocalUrl(url)) {
+            // Establish tunnel
+            console.log("Detected local URL, establishing tunnel...")
+
+            // .host includes port, .hostname does not
+            const host = new URL(url).host;
+            
+            this.tunnelClient = new TunnelClient({
+                localServerUrl: host,
+                tunnelServerUrl: "https://api.app.magnitude.run:4444"
+            });
+
+            const { tunnelUrl } = await this.tunnelClient.connect();
+
+            this.testCase.setTunnelUrl(tunnelUrl);
+
+            // TODO: handle what to do if tunnel disconnects
+        }
+
+
         const runData = await Magnitude.getInstance().startTestRun(this.testCase.toData());
         // INTERNAL run CUID2
         this.runId = runData.id;

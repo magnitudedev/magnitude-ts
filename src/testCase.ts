@@ -54,16 +54,15 @@ export interface TestCaseOptions {
   }
 
 export class TestCase {
-    
+    // User-defined ID (sdk_id)
     private id: string;
 
+    // Internal CUID2
     private internalId: string | null = null;
 
-    // Internal CUID2
-    // User-defined ID
-    //private sdk_id: string;
     private name: string;
     private url: string;
+    private tunnelUrl: string | null = null;
     private steps: TestStep[] = [];
 
     constructor(options: TestCaseOptions) {
@@ -93,9 +92,14 @@ export class TestCase {
         return {
             id: this.id,
             name: this.name,
-            url: this.url,
+            // If tunneling, provide tunnel url instead
+            url: this.tunnelUrl ?? this.url,
             steps: this.steps.map(step => step.toData())
         }
+    }
+
+    public getUrl(): string {
+        return this.url;
     }
 
     public getId(): string {
@@ -108,6 +112,10 @@ export class TestCase {
 
     public setInternalId(id: string) {
         this.internalId = id;
+    }
+
+    public setTunnelUrl(url: string) {
+        this.tunnelUrl = url;
     }
 
     // get sdk id

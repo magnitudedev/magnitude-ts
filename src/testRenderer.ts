@@ -66,7 +66,12 @@ export class TestRenderer {
      * Update the test data without restarting the render loop
      */
     public updateData(run: TestRunResult): void {
+        //const isFirstUpdate = !this.lastRun && run;
         this.lastRun = run;
+        // if (isFirstUpdate) {
+        //     console.log("clearing")
+        //     logUpdate.clear();
+        // }
     }
 
     private formatElapsedTime(ms: number): string {
