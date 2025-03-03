@@ -1,8 +1,13 @@
 # Magnitude
 
-[Magnitude](https://magnitude.run) is AI-powered E2E testing for web apps.
+[Magnitude](https://magnitude.run) is AI-powered E2E testing for web apps. Sign up [here](https://app.magnitude.run/signup).
 
 This repo is a TypeScript client for running natural language test cases with Magnitude.
+
+Magnitude can be used however you like, but some common use cases include:
+- Pre-deployment E2E testing: Check all your core user flows before deploying with low maintenance.
+- Production monitoring: Make sure key flows are always working properly and find bugs before your users do.
+- Local testing - Magnitude can run on any machine with no additional setup. Use it in dev environments, pipelines, or wherever.
 
 ## Installation
 
@@ -12,7 +17,7 @@ npm install magnitude-ts
 
 ## Setup
 
-First, you'll need to initialize the Magnitude client with your API key. You can do this in two ways:
+First, you'll need to initialize the Magnitude client with your API key. You can get a free API key by signing up at https://app.magnitude.run/signup, then creating one in Settings->API Keys. Then configure it in one of two ways:
 
 1. Initialize in code:
 ```typescript
