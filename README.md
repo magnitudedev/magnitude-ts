@@ -23,7 +23,7 @@ First, you'll need to initialize the Magnitude client with your API key. You can
 ```typescript
 import { Magnitude } from 'magnitude-ts';
 
-Magnitude.init('your-api-key-here');
+Magnitude.init({ apiKey: 'your-api-key-here' });
 ```
 
 2. Or set it as an environment variable:
