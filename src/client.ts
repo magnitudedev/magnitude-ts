@@ -1,97 +1,94 @@
 import axios, { AxiosInstance } from 'axios';
 import { TestCase as TestCaseData, TestRun as TestRunData } from './types';
-import { validateTestCase } from './schema'
+import { validateTestCase } from './schema';
+
+interface MagnitudeConfig {
+    // Magnitude API key. Get one at https://app.magnitude.run/
+    apiKey?: string;
+    // Magnitude API URL
+    baseUrl?: string;
+    // Timeout for API requests to Magnitude backend
+    apiTimeout?: number;
+    // Tunnel server URL
+    tunnelUrl?: string;
+    // Whether to automatically try and tunnel to local URLs
+    autoTunnel?: boolean;
+}
+
+const DEFAULT_CONFIG: Omit<Required<MagnitudeConfig>, 'apiKey'> = {
+    baseUrl: 'https://api.app.magnitude.run/api',
+    apiTimeout: 30000,
+    tunnelUrl: 'https://api.app.magnitude.run:4444',
+    autoTunnel: true,
+};
 
 export class Magnitude {
     private static instance: Magnitude | null = null;
-    private isInitialized: boolean = false;
-    private api: AxiosInstance | null = null;
+    private static initialized: boolean = false;
+    private config: Required<MagnitudeConfig>;
+    private api: AxiosInstance;
 
-    private constructor() {
-        // Try to initialize client / API key from environment
-        const apiKey = process.env.MAGNITUDE_API_KEY || null;
+    private constructor(config: MagnitudeConfig) {
+        config = {
+            ...DEFAULT_CONFIG,
+            ...{ apiKey: process.env.MAGNITUDE_API_KEY },
+            ...config
+        };
 
-        if (apiKey) {
-            this._initializeApi(apiKey);
+        if (!config.apiKey) {
+            throw new Error('API key is required. Provide it in config or set MAGNITUDE_API_KEY environment variable.');
         }
-    }
 
-    // Private method for initialization logic
-    private _initializeApi(apiKey: string): void {
-        const api = axios.create({
-            baseURL: 'https://api.app.magnitude.run/api',
-            timeout: 30000,
+        this.api = axios.create({
+            baseURL: config.baseUrl,
+            timeout: config.apiTimeout,
             headers: {
                 'Content-Type': 'application/json',
+                'X-API-Key': config.apiKey
             }
         });
-        
-        api.defaults.headers.common['X-API-Key'] = apiKey;
-
-        // api.interceptors.request.use(request => {
-        //     console.log('Request URL:', request.url);
-        //     console.log('Request Method:', request.method);
-        //     console.log('Request Headers:', request.headers);
-        //     console.log('Request Data:', request.data);
-        //     return request;
-        // });
-
-        this.api = api;
-        this.isInitialized = true;
+        this.config = config as Required<MagnitudeConfig>;
     }
 
-    public static init(apiKey: string): void {
-        const instance = Magnitude.getInstance();
-        instance._initializeApi(apiKey);
-    }
-
-    public static isInitialized(): boolean {
-        return Magnitude.getInstance().isInitialized;
+    public static init(config: MagnitudeConfig = {}): void {
+        this.instance = new Magnitude(config);
+        this.initialized = true;
     }
 
     public static getInstance(): Magnitude {
-        // Get singleton instance
-        if (!Magnitude.instance) {
-            Magnitude.instance = new Magnitude();
+        if (!this.instance) {
+            this.init({});
         }
-        return Magnitude.instance;
+        return this.instance!;
     }
 
-    public getApi(): AxiosInstance {
-        if (!this.api) {
-            throw new Error('Magnitude not initialized. Call Magnitude.init() first.');
+    public static isInitialized(): boolean {
+        if (!this.initialized) {
+            // Attempt auto-initialize
+            this.getInstance();
         }
-        return this.api;
+        return this.initialized;
     }
 
-    async startTestRun(testCase: TestCaseData): Promise<TestRunData> {
-        /**
-         * Start a test run
-         */
+    public static getTunnelUrl(): string {
+        return this.getInstance().config.tunnelUrl;
+    }
 
-        // Verify test case data structure with zod before making API request
-        // so that user can get specific feedback and not just random 422
+    public static isAutoTunnelEnabled(): boolean {
+        return this.getInstance().config.autoTunnel;
+    }
+
+    public static async startTestRun(testCase: TestCaseData): Promise<TestRunData> {
         validateTestCase(testCase);
-
-        const response = await this.getApi().post<TestRunData>('/run', testCase);
-        return response.data;//.id;
+        const instance = this.getInstance();
+        const response = await instance.api.post<TestRunData>('/run', testCase);
+        return response.data;
     }
 
-    async getTestRunStatus(runId: string): Promise<TestRunData> {
-        const response = await this.getApi().get<TestRunData>(`/run/${runId}`);
+    public static async getTestRunStatus(runId: string): Promise<TestRunData> {
+        const instance = this.getInstance();
+        const response = await instance.api.get<TestRunData>(`/run/${runId}`);
         return response.data;
-        // try {
-        //     const response = await getApi().get<TestRun>(`/run/${runId}`);
-        //     return response.data;
-        // } catch (error) {
-        //     if (attempt >= maxAttempts) throw error;
-            
-        //     // Exponential backoff: 2^attempt * 1000ms (1s, 2s, 4s, etc)
-        //     const backoffDelay = Math.min(Math.pow(2, attempt) * 1000, 10000);
-        //     await delay(backoffDelay);
-            
-        //     return getTestRunStatus(runId, attempt + 1, maxAttempts);
-        // }
     }
 }
 

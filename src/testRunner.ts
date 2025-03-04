@@ -79,7 +79,7 @@ export class TestRunner {
         // Establish tunnel if necessary
         const url = this.testCase.getUrl();
 
-        if (isLocalUrl(url)) {
+        if (Magnitude.isAutoTunnelEnabled() && isLocalUrl(url)) {
             // Establish tunnel
             //console.log("Detected local URL, establishing tunnel...")
 
@@ -88,7 +88,7 @@ export class TestRunner {
             
             this.tunnelClient = new TunnelClient({
                 localServerUrl: host,
-                tunnelServerUrl: "https://api.app.magnitude.run:4444"
+                tunnelServerUrl: Magnitude.getTunnelUrl()
             });
 
             const { tunnelUrl } = await this.tunnelClient.connect();
@@ -99,7 +99,7 @@ export class TestRunner {
         }
 
 
-        const runData = await Magnitude.getInstance().startTestRun(this.testCase.toData());
+        const runData = await Magnitude.startTestRun(this.testCase.toData());
         // INTERNAL run CUID2
         this.runId = runData.id;
         this.testCase.setInternalId(runData.test_case_id);
@@ -142,7 +142,7 @@ export class TestRunner {
 
         // Call API to get results and make new TestRunResult() around the returned data
         const run = new TestRunResult(
-            await Magnitude.getInstance().getTestRunStatus(this.runId),
+            await Magnitude.getTestRunStatus(this.runId),
             this.testCase
         );
 
