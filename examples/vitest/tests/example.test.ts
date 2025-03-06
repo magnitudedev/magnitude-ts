@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
-import { TestCase, TestRunResult } from 'magnitude-ts';
-import { TunnelClient } from 'bunnel';
+import { describe, it } from 'vitest';
+import { TestCase } from 'magnitude-ts';
 
 describe('Login Test with Magnitude', { timeout: 300000 }, () => {
     const TEST_URL = 'http://localhost:3000';

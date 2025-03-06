@@ -1,13 +1,20 @@
 # Magnitude
 
-[Magnitude](https://magnitude.run) is AI-powered E2E testing for web apps. Sign up [here](https://app.magnitude.run/signup).
+[Magnitude](https://magnitude.run) is an SDK and platform for AI-powered E2E testing. 
 
-This repo is a TypeScript client for running natural language test cases with Magnitude.
+Use Magnitude to write flexible natural language E2E tests that don't break when your interface changes.
 
-Magnitude can be used however you like, but some common use cases include:
-- Pre-deployment E2E testing: Check all your core user flows before deploying with low maintenance.
-- Production monitoring: Make sure key flows are always working properly and find bugs before your users do.
-- Local testing - Magnitude can run on any machine with no additional setup. Use it in dev environments, pipelines, or wherever.
+Replace your flaky Playwright tests, cover new flows quickly, all without having to install and manage browser infrastructure.
+
+<div align="center">
+
+<h3>
+
+[Homepage](https://www.magnitude.run/) | [Get Started](https://docs.magnitude.run/getting-started/quickstart) | [Discord](https://discord.gg/VcdpMh9tTy)
+
+</h3>
+
+</div>
 
 ## Installation
 
