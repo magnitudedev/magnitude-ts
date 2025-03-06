@@ -28,6 +28,7 @@ export class TestRunner {
     private tunnelClient: TunnelClient | null = null;
 
     constructor(testCase: TestCase) {
+        console.log("Test Runner Intialized");
         // Start test case
         this.testCase = testCase;
         //this.runningPromise = this.execute();
@@ -100,17 +101,20 @@ export class TestRunner {
 
         if (Magnitude.isAutoTunnelEnabled() && isLocalUrl(url)) {
             // Establish tunnel
-            //console.log("Detected local URL, establishing tunnel...")
+            //console.log(`Detected local URL, establishing tunnel to ${Magnitude.getTunnelUrl()}...`)
 
             // .host includes port, .hostname does not
             const host = new URL(url).host;
-            
+
             this.tunnelClient = new TunnelClient({
-                localServerUrl: host,
+                // ADD PROTOCOL BACK, assume HTTP since local
+                localServerUrl: `http://${host}`,
                 tunnelServerUrl: Magnitude.getTunnelUrl()
             });
 
+            //console.log("Connecting...")
             const { tunnelUrl } = await this.tunnelClient.connect();
+            //console.log("Connected to tunnel!")
 
             this.testCase.setTunnelUrl(tunnelUrl);
 

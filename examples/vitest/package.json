@@ -1,0 +1,20 @@
+{
+  "name": "magnitude-vitest-example",
+  "version": "1.0.0",
+  "description": "Example of using Magnitude-TS with Vitest",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "serve": "http-server public -p 3000"
+  },
+  "dependencies": {
+    "magnitude-ts": "file:../.."
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "http-server": "^14.1.1",
+    "typescript": "^5.7.3",
+    "vitest": "^1.4.0"
+  }
+}

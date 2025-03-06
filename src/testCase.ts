@@ -88,6 +88,7 @@ export class TestCase {
     }
 
     public run(): TestRunner {
+        //console.log("TestCase.run()");
         // Ensure Magnitude is initialized
         if (!Magnitude.isInitialized()) {
             throw new Error('Magnitude not initialized. Call Magnitude.init() before running tests.');
