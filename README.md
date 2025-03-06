@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="https://magnitude.run/logo.svg" alt="Magnitude Logo" width="180" />
+</div>
+
 # Magnitude
 
 [Magnitude](https://magnitude.run) is an SDK and platform for AI-powered E2E testing. 
