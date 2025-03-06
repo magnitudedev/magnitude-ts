@@ -66,11 +66,6 @@ async function runTest() {
     
     // start the test case!
     const result = await loginTest.run().show();
-
-    // do whatever based on result - e.g. halt deployment if fails
-    if (!result.hasPassed()) {
-        console.log("Test failed! Problems:", result.getProblems());
-    }
 }
 
 runTest();
