@@ -1,13 +1,17 @@
 <div align="center">
   <h1>
-    <img src="https://magnitude.run/logo.svg" alt="Magnitude Logo" width="60" style="vertical-align: middle; margin-right: 10px" />
+    <img src="https://magnitude.run/logo.svg" alt="Magnitude Logo" width="100" style="vertical-align: middle; margin-right: 20px" />
     Magnitude
   </h1>
 
-  <a href="https://www.magnitude.run/">Homepage</a> | 
-  <a href="https://docs.magnitude.run/getting-started/introduction">Read the docs</a> | 
-  <a href="https://discord.gg/VcdpMh9tTy">Discord</a>
+  <h3>
+    <a href="https://magnitude.run/">Homepage</a> &nbsp;&nbsp;|&nbsp;&nbsp; 
+    <a href="https://docs.magnitude.run/getting-started/introduction">Read the docs</a> &nbsp;&nbsp;|&nbsp;&nbsp; 
+    <a href="https://discord.gg/VcdpMh9tTy">Discord</a>
+  </h3>
 </div>
+
+---
 
 An SDK and platform for AI-powered E2E testing.
 
