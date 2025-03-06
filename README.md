@@ -10,7 +10,7 @@ Replace your flaky Playwright tests, cover new flows quickly, all without having
 
 <h3>
 
-[Homepage](https://www.magnitude.run/) | [Read the docs](https://docs.magnitude.run/getting-started/quickstart) | [Discord](https://discord.gg/VcdpMh9tTy)
+[Homepage](https://www.magnitude.run/) | [Read the docs](https://docs.magnitude.run/getting-started/introduction) | [Discord](https://discord.gg/VcdpMh9tTy)
 
 </h3>
 
