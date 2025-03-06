@@ -13,6 +13,10 @@ interface MagnitudeConfig {
     tunnelUrl?: string;
     // Whether to automatically try and tunnel to local URLs
     autoTunnel?: boolean;
+    // Whether to throw an error when encountering a critical problem (default: true)
+    throwOnProblem?: boolean;
+    // Whether to throw an error when encountering an unexpected warning (default: false)
+    throwOnWarning?: boolean;
 }
 
 const DEFAULT_CONFIG: Omit<Required<MagnitudeConfig>, 'apiKey'> = {
@@ -20,6 +24,8 @@ const DEFAULT_CONFIG: Omit<Required<MagnitudeConfig>, 'apiKey'> = {
     apiTimeout: 30000,
     tunnelUrl: 'https://api.app.magnitude.run:4444',
     autoTunnel: true,
+    throwOnProblem: true,
+    throwOnWarning: false,
 };
 
 export class Magnitude {
@@ -76,6 +82,14 @@ export class Magnitude {
 
     public static isAutoTunnelEnabled(): boolean {
         return this.getInstance().config.autoTunnel;
+    }
+
+    public static shouldThrowOnProblem(): boolean {
+        return this.getInstance().config.throwOnProblem;
+    }
+
+    public static shouldThrowOnWarning(): boolean {
+        return this.getInstance().config.throwOnWarning;
     }
 
     public static async startTestRun(testCase: TestCaseData): Promise<TestRunData> {

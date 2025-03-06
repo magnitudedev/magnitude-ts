@@ -4,9 +4,10 @@ import { TestRun as TestRunData, Problem as ProblemData } from './types'; // mov
 import crypto from 'crypto';
 import { Magnitude } from './client';
 import { TestRenderer } from './testRenderer';
-import { TestRunResult, Problem } from './dataWrappers';
+import { TestRunResult, Problem, Warning } from './dataWrappers';
 import { isLocalUrl } from './util';
 import { TunnelClient } from 'bunnel';
+import { ProblemError, WarningError } from './errors';
 
 
 export class TestRunner {
@@ -19,8 +20,9 @@ export class TestRunner {
     private startCallback: ((run: TestRunResult) => void) | null = null;
     private progressCallback: ((progress: TestRunResult) => void) | null = null;
     private problemCallback: ((problem: Problem) => void) | null = null;
+    private warningCallback: ((warning: Warning) => void) | null = null;
     private lastResultHash: string | null = null;
-    private lastProblemCount: number = 0;
+    private lastWarningCount: number = 0;
     private showDisplay: boolean = false;
     private renderer: TestRenderer | null = null;
     private tunnelClient: TunnelClient | null = null;
@@ -57,19 +59,36 @@ export class TestRunner {
             this.callProgressCallback(run);
         }
 
-        const problems = run.getProblems();
+        const warnings = run.getWarnings();
 
-        const numNewProblems = problems.length - this.lastProblemCount;
+        const numNewWarnings = warnings.length - this.lastWarningCount;
 
-        if (numNewProblems > 0) {
-            // Do callback for new problems
-            for (const problem of problems.slice(-numNewProblems)) {
-                this.callProblemCallback(problem);
+        if (numNewWarnings > 0) {
+            // Do callback for new warnings
+            for (const warning of warnings.slice(-numNewWarnings)) {
+                this.callWarningCallback(warning);
+
+                if (Magnitude.shouldThrowOnWarning()) {
+                    //throw new WarningError(warning);
+                    this.rejectRunningPromise(new WarningError(warning));
+                }
             }
         }
 
+        const problem = run.getProblem();
+
+        if (problem) {
+            this.callProblemCallback(problem);
+
+            if (Magnitude.shouldThrowOnProblem()) {
+                if (Magnitude.shouldThrowOnProblem()) {
+                    this.rejectRunningPromise(new ProblemError(problem));
+                }
+            }
+        }
+        
         this.lastResultHash = runHash;
-        this.lastProblemCount = problems.length;
+        this.lastWarningCount = warnings.length;
     }
 
     private async start() {
@@ -173,6 +192,10 @@ export class TestRunner {
         if (this.progressCallback) this.progressCallback(run);
     }
 
+    private callWarningCallback(warning: Warning) {
+        if (this.warningCallback) this.warningCallback(warning);
+    }
+
     private callProblemCallback(problem: Problem) {
         if (this.problemCallback) this.problemCallback(problem);
     }
@@ -190,6 +213,11 @@ export class TestRunner {
 
     public onProblem(callback: (problem: Problem) => void): TestRunner {
         this.problemCallback = callback;
+        return this;
+    }
+
+    public onWarning(callback: (warning: Warning) => void): TestRunner {
+        this.warningCallback = callback;
         return this;
     }
 

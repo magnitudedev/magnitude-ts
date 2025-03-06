@@ -21,7 +21,7 @@ async function runTest() {
     const result = await loginTest.run().show();
 
     if (!result.hasPassed()) {
-        console.log("Test failed! Problems:", result.getProblems());
+        console.log("Test failed! Problem:", result.getProblem());
     }
 }
 

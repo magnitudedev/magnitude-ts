@@ -29,12 +29,13 @@ export class Problem {
     getActualResult(): string {
         return this.data.actual_result;
     }
-
-    isFatal(): boolean {
-        // Whether this problem caused the test to fail
-        return this.data.is_fatal;
-    }
+    // isFatal(): boolean {
+    //     // Whether this problem caused the test to fail
+    //     return this.data.is_fatal;
+    // }
 }
+
+export class Warning extends Problem {}
 
 export class TestRunResult {
     // Wrapper class for returned test data
@@ -62,23 +63,34 @@ export class TestRunResult {
         return this.data;
     }
 
-    hasProblems() {
-        return this.getProblems().length > 0;
-    }
-
-    getProblems(): Problem[] {
-        const problems: Problem[] = [];
+    getProblem(): Problem | null {
+        // At most one critical problem 
         for (const step of this.data.steps) {
             for (const problem of step.problems ?? []) {
-                problems.push(new Problem(problem));
+                if (problem.is_fatal) return new Problem(problem);
             }
             for (const check of step.checks) {
                 for (const problem of check.problems ?? []) {
-                    problems.push(new Problem(problem));
+                    if (problem.is_fatal) return new Problem(problem);
                 }
             }
         }
-        return problems;
+        return null;
+    }
+
+    getWarnings(): Warning[] {
+        const warnings: Warning[] = [];
+        for (const step of this.data.steps) {
+            for (const problem of step.problems ?? []) {
+                if (!problem.is_fatal) warnings.push(new Warning(problem));
+            }
+            for (const check of step.checks) {
+                for (const problem of check.problems ?? []) {
+                    if (!problem.is_fatal) warnings.push(new Warning(problem));
+                }
+            }
+        }
+        return warnings;
     }
 
     isDone(): boolean {

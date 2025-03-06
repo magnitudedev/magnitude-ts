@@ -15,9 +15,9 @@ export class TestRenderer {
     private testCase: TestCase | null = null;
     private isActive: boolean = false;
     private startTime: number = 0;
-    
-    constructor() {}
-    
+
+    constructor() { }
+
     /**
      * Start continuous rendering with animation, even before test data is available
      */
@@ -26,13 +26,13 @@ export class TestRenderer {
         this.testCase = testCase;
         this.isActive = true;
         this.startTime = Date.now();
-        
+
         // Start the render loop if not already running
         if (!this.renderInterval) {
             this.renderInterval = setInterval(() => {
                 if (this.isActive && this.testCase) {
                     this.renderFrame();
-                    
+
                     // If test is done, stop the render loop
                     if (this.lastRun?.isDone()) {
                         this.stopRendering();
@@ -41,7 +41,7 @@ export class TestRenderer {
             }, 100); // Update every 100ms for smooth animation
         }
     }
-    
+
     /**
      * Stop the continuous rendering
      */
@@ -51,17 +51,17 @@ export class TestRenderer {
             clearInterval(this.renderInterval);
             this.renderInterval = null;
         }
-        
+
         // Render one final frame to show the completed state
         if (this.lastRun && this.testCase) {
             this.renderFrame();
         }
-        
+
         // Just call logUpdate.done() to preserve the last frame
         // without printing any additional output
         logUpdate.done();
     }
-    
+
     /**
      * Update the test data without restarting the render loop
      */
@@ -81,22 +81,22 @@ export class TestRenderer {
 
         return `${hours > 0 ? hours.toString().padStart(2, '0') + ':' : ''}${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
     }
-    
+
     /**
      * Render a single frame of the display
      */
     private renderFrame(): void {
         if (!this.testCase) return;
-        
+
         // Increment spinner frame
         this.spinnerFrameIndex = (this.spinnerFrameIndex + 1) % this.spinnerFrames.length;
-        
+
         // Get current spinner frame
         const spinner = this.spinnerFrames[this.spinnerFrameIndex];
-        
+
         // Build output lines
         const lines: string[] = [];
-        
+
         if (!this.lastRun) {
             // Simple starting message
             lines.push(`${spinner} Test: ${this.testCase.toData().name}`);
@@ -106,24 +106,24 @@ export class TestRenderer {
             const steps = data.steps;
             const actions = data.actions || [];
             const totalSteps = steps.length;
-            
+
             // Find the first pending item (step or check)
             let firstPendingItemFound = false;
             let activeStepIndex = -1;
             let activeCheckIndex = -1;
             let activeStepWithCheck = -1;
-            
+
             // First, find the active step and check indexes
             for (let i = 0; i < steps.length; i++) {
                 const step = steps[i];
-                
+
                 // Check if this step is pending
                 if (step.status === "pending" && !firstPendingItemFound) {
                     activeStepIndex = i;
                     firstPendingItemFound = true;
                     break;
                 }
-                
+
                 // Check if any checks in this step are pending
                 for (let j = 0; j < step.checks.length; j++) {
                     if (step.checks[j].status === "pending" && !firstPendingItemFound) {
@@ -133,32 +133,32 @@ export class TestRenderer {
                         break;
                     }
                 }
-                
+
                 if (firstPendingItemFound) {
                     break;
                 }
             }
-            
+
             // If no pending items were found, use the last step
             if (activeStepIndex === -1 && activeCheckIndex === -1) {
                 activeStepIndex = totalSteps - 1;
             }
-            
+
             const actionCount = actions.length;
-            
+
             // Get current spinner frame (only show if test is still running)
             const displaySpinner = !this.lastRun.isDone() ? spinner + ' ' : '';
-            
+
             // 1. Display test name and status with spinner
-            const status = this.lastRun.isDone() 
-                ? (this.lastRun.hasPassed() ? chalk.greenBright("[PASSED]") : chalk.redBright("[FAILED]")) 
+            const status = this.lastRun.isDone()
+                ? (this.lastRun.hasPassed() ? chalk.greenBright("[PASSED]") : chalk.redBright("[FAILED]"))
                 : brightMagnitudeBlue("[RUNNING]");
 
             const elapsedTime = this.formatElapsedTime(Date.now() - this.startTime);
             const currentStep = activeCheckIndex !== -1 ? activeStepWithCheck : activeStepIndex;
-            
+
             lines.push(`${displaySpinner}${status} ${this.testCase.toData().name} ` + chalk.blackBright(`⏱ ${elapsedTime} | Step ${currentStep + 1}/${totalSteps} | Actions: ${actionCount}`));
-            
+
             if (this.testCase.getTunnelUrl()) {
                 const localUrl = this.testCase.getUrl()
                 const tunnelUrl = this.testCase.getTunnelUrl();
@@ -174,19 +174,19 @@ export class TestRenderer {
                 const step = steps[i];
                 const stepStatus = this.getStatusSymbol(step.status);
                 const isCurrentStep = i === activeStepIndex;
-                
+
                 lines.push(`${isCurrentStep ? magnitudeBlue(">") : " "} ${stepStatus} Step ${i + 1}: ${step.description}`);
-                
+
                 // Show checks for this step
                 for (let j = 0; j < step.checks.length; j++) {
                     const check = step.checks[j];
                     const checkStatus = this.getStatusSymbol(check.status);
                     const isCurrentCheck = i === activeStepWithCheck && j === activeCheckIndex;
-                    
+
                     lines.push(`    ${isCurrentCheck ? magnitudeBlue(">") : " "} ${checkStatus} Check: ${check.description}`);
                 }
             }
-            
+
             // Actions
             lines.push(brightMagnitudeBlue(`\nActions:`));
             if (actions.length === 0) {
@@ -196,25 +196,48 @@ export class TestRenderer {
                     lines.push("  " + magnitudeBlue(`${this.getActionSymbol(action.variant)} ${action.variant.toUpperCase()}`) + `: ${action.description}`);
                 }
             }
-            
+
             // 5. Problems section at the bottom
-            const problems = this.lastRun.getProblems();
-            if (problems.length > 0) {
-                lines.push(brightMagnitudeBlue(`\nProblems:`));
-                for (const problem of problems) {
-                    const severity = problem.getSeverity();
-                    //const severitySymbol = this.getSeveritySymbol(severity);
-                    lines.push(`  ${this.getSeverityDescriptor(severity)}: ${problem.getTitle()} `);
-                    lines.push(`    ${magnitudeBlue('Expected')}: ${problem.getExpectedResult()}`);
-                    lines.push(`    ${magnitudeBlue('Actual')}: ${problem.getActualResult()}`);
+            // const problems = this.lastRun.getProblems();
+            // if (problems.length > 0) {
+            //     lines.push(brightMagnitudeBlue(`\nProblems:`));
+            //     for (const problem of problems) {
+            //         const severity = problem.getSeverity();
+            //         //const severitySymbol = this.getSeveritySymbol(severity);
+            //         lines.push(`  ${this.getSeverityDescriptor(severity)}: ${problem.getTitle()} `);
+            //         lines.push(`    ${magnitudeBlue('Expected')}: ${problem.getExpectedResult()}`);
+            //         lines.push(`    ${magnitudeBlue('Actual')}: ${problem.getActualResult()}`);
+            //     }
+            // }
+            const problem = this.lastRun.getProblem();
+            const warnings = this.lastRun.getWarnings();
+
+            // Handle critical problem if it exists
+            if (problem) {
+                lines.push(chalk.redBright(`\nProblem:`));
+                const severity = problem.getSeverity();
+                lines.push(` ${this.getSeverityDescriptor(severity)}: ${problem.getTitle()} `);
+                lines.push(` ${magnitudeBlue('Expected')}: ${problem.getExpectedResult()}`);
+                lines.push(` ${magnitudeBlue('Actual')}: ${problem.getActualResult()}`);
+            }
+
+            // Handle warnings
+            if (warnings.length > 0) {
+                lines.push(chalk.yellowBright(`\nWarnings:`));
+
+                for (const warning of warnings) {
+                    const severity = warning.getSeverity();
+                    lines.push(` ${this.getSeverityDescriptor(severity)}: ${warning.getTitle()} `);
+                    lines.push(` ${magnitudeBlue('Expected')}: ${warning.getExpectedResult()}`);
+                    lines.push(` ${magnitudeBlue('Actual')}: ${warning.getActualResult()}`);
                 }
             }
         }
-        
+
         // Update the display with all formatted lines joined
         logUpdate(lines.join('\n'));
     }
-   
+
     private getActionSymbol(variant: "load" | "click" | "hover" | "type" | "scroll" | "wait" | "back") {
         switch (variant) {
             case "load":
@@ -235,7 +258,7 @@ export class TestRenderer {
                 return "?"; // Question mark for unknown action
         }
     }
-    
+
     private getStatusSymbol(status: "pending" | "passed" | "failed"): string {
         switch (status) {
             case "passed": return chalk.greenBright("✓");

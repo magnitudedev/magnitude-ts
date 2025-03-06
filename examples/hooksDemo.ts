@@ -28,7 +28,7 @@ async function runTest() {
         .onProblem(problem => console.log("Identified a problem!", problem.getTitle()))
         .onProgress(result => console.log("Total actions taken:", result.getActions().length))
     console.log("Passed?", result.hasPassed());
-    console.log(`Ran into ${result.getProblems().length} problems`);
+    console.log(`Ran into ${result.getWarnings().length} warnings`);
 }
 
 runTest();
