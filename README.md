@@ -1,24 +1,19 @@
 <div align="center">
-  <img src="https://magnitude.run/logo.svg" alt="Magnitude Logo" width="180" />
+  <h1>
+    <img src="https://magnitude.run/logo.svg" alt="Magnitude Logo" width="60" style="vertical-align: middle; margin-right: 10px" />
+    Magnitude
+  </h1>
+
+  <a href="https://www.magnitude.run/">Homepage</a> | 
+  <a href="https://docs.magnitude.run/getting-started/introduction">Read the docs</a> | 
+  <a href="https://discord.gg/VcdpMh9tTy">Discord</a>
 </div>
 
-# Magnitude
-
-[Magnitude](https://magnitude.run) is an SDK and platform for AI-powered E2E testing. 
+An SDK and platform for AI-powered E2E testing.
 
 Use Magnitude to write flexible natural language E2E tests that don't break when your interface changes.
 
 Replace your flaky Playwright tests, cover new flows quickly, all without having to install and manage browser infrastructure.
-
-<div align="center">
-
-<h3>
-
-[Homepage](https://www.magnitude.run/) | [Read the docs](https://docs.magnitude.run/getting-started/introduction) | [Discord](https://discord.gg/VcdpMh9tTy)
-
-</h3>
-
-</div>
 
 ## Installation
 
