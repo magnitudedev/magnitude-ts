@@ -1,7 +1,6 @@
 <div align="center">
   <p>
     <img src="https://magnitude.run/logo.svg" alt="Magnitude Logo" width="100" style="vertical-align: middle; margin-right: 20px" />
-    <span style="font-size: 42px; font-weight: bold; vertical-align: middle;">Magnitude</span>
   </p>
 
   <h3>
@@ -13,7 +12,7 @@
   <hr style="height: 1px; border: none; background-color: #e1e4e8; margin: 24px 0;">
 </div>
 
-An SDK and platform for AI-powered E2E testing.
+Magnitude is an SDK and platform for AI-powered E2E testing.
 
 Use Magnitude to write flexible natural language E2E tests that don't break when your interface changes.
 
