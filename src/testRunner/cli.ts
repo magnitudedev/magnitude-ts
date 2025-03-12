@@ -8,6 +8,8 @@ import TestRegistry from './testRegistry';
 import { TestRunner } from './testRunner';
 import { TestCompiler } from './testCompiler';
 import { TestGlobalConfig } from './types';
+import chalk from 'chalk';
+import { magnitudeBlue, brightMagnitudeBlue } from '../colors';
 
 interface CliOptions {
     workers?: number;
@@ -149,23 +151,83 @@ function findConfig(searchRoot: string): string | null {
 
 async function readConfig(configPath: string): Promise<any> {
     try {
-      const compiler = new TestCompiler();
-      
-      // Use the compiler to transform the TypeScript config file
-      const compiledPath = await compiler.compileFile(configPath);
-      
-      // Import the compiled module
-      const configModule = await import(`file://${compiledPath}`);
-      
-      // Extract the default export
-      const config = configModule.default;
-      
-      return config;
+        const compiler = new TestCompiler();
+
+        // Use the compiler to transform the TypeScript config file
+        const compiledPath = await compiler.compileFile(configPath);
+
+        // Import the compiled module
+        const configModule = await import(`file://${compiledPath}`);
+
+        // Extract the default export
+        const config = configModule.default;
+
+        return config;
     } catch (error) {
-      console.error(`Error reading config from ${configPath}:`, error);
-      return null;
+        console.error(`Error reading config from ${configPath}:`, error);
+        return null;
     }
-  }
+}
+
+const configTemplate = `import { defineConfig } from 'magnitude-ts';
+
+export default defineConfig({
+    baseUrl: "localhost:5173"
+});
+`;
+
+const exampleTestTemplate = `import { test } from 'magnitude-ts';
+
+// test('can add a todo')
+//     .step('Enter and add a todo')
+//         .data('Create more Magnitude test cases')
+//         .check('Todo appears')
+`;
+
+async function initializeProject(): Promise<void> {
+    // Find project root (or use current directory as fallback)
+    const projectRoot = await findProjectRoot();
+
+    if (!projectRoot) {
+        console.error("Couldn't find package.json, please initialize Magnitude in a node.js project");
+        process.exit(1);
+    }
+
+    console.log(magnitudeBlue(`Initializing Magnitude tests in ${projectRoot}`));
+
+    // Create directory structure
+    const testsDir = path.join(projectRoot, 'tests', 'magnitude');
+
+    const configPath = path.join(testsDir, 'magnitude.config.ts');
+
+    if (fs.existsSync(configPath)) {
+        console.error("Already initialized, magnitude.config.ts already exists!");
+        process.exit(1);
+    }
+
+    try {
+        // Create directories recursively
+        await fs.promises.mkdir(testsDir, { recursive: true });
+
+        // Create config file
+        await fs.promises.writeFile(configPath, configTemplate);
+
+        // Create example test file
+        const examplePath = path.join(testsDir, 'example.mag.ts');
+        await fs.promises.writeFile(examplePath, exampleTestTemplate);
+
+        console.log(`${brightMagnitudeBlue('✓')} Created Magnitude test directory structure:
+    - ${path.relative(projectRoot, configPath)}
+    - ${path.relative(projectRoot, examplePath)}
+  `);
+        console.log(`You can now run tests with: ${brightMagnitudeBlue('magnitude')}`);
+        console.log('Docs:', brightMagnitudeBlue('https://docs.magnitude.run'));
+
+    } catch (error) {
+        console.error('Error initializing Magnitude project:', error);
+        process.exit(1);
+    }
+}
 
 const program = new Command();
 
@@ -231,6 +293,13 @@ program
             console.log('All tests passed');
             process.exit(0);
         }
+    });
+
+program
+    .command('init')
+    .description('Initialize Magnitude test directory structure')
+    .action(async () => {
+        await initializeProject();
     });
 
 program.parse();

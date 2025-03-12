@@ -2,10 +2,11 @@ import { TestRunResult, Problem } from './dataWrappers';
 import { TestCase } from './testCase';
 import logUpdate from 'log-update';
 import chalk from 'chalk';
+import { magnitudeBlue, brightMagnitudeBlue } from './colors';
 
 //const magnitudeBlue = chalk.hex('#0369a1');
-const magnitudeBlue = chalk.hex('#0369a1');
-const brightMagnitudeBlue = chalk.hex('#42bafb');
+// const magnitudeBlue = chalk.hex('#0369a1');
+// const brightMagnitudeBlue = chalk.hex('#42bafb');
 
 export class TestRenderer {
     private spinnerFrameIndex: number = 0;

@@ -4,6 +4,7 @@ import { TestRenderer } from '../testRenderer';
 import { TestRuntime } from '../testRuntime';
 import logUpdate from 'log-update';
 import chalk from 'chalk';
+import { magnitudeBlue, brightMagnitudeBlue } from '../colors';
 
 // Define test status types
 type TestStatus = 'pending' | 'running' | 'passed' | 'failed';
@@ -19,9 +20,6 @@ interface TestExecutionState {
     error?: Error;
     url?: string; // URL of the test, available when running or completed
 }
-
-const magnitudeBlue = chalk.hex('#0369a1');
-const brightMagnitudeBlue = chalk.hex('#42bafb');
 
 export class TestViewer {
     private registry: TestRegistry;

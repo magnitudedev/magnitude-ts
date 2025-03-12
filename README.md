@@ -21,10 +21,14 @@ Replace your flaky Playwright tests, cover new flows quickly, all without having
 ## Installation
 
 ```bash
-npm install magnitude-ts
+npm install --save-dev magnitude-ts
 ```
 
 ## Setup
+
+```
+npx magnitude init
+```
 
 First, you'll need to initialize the Magnitude client with your API key. You can get a free API key by signing up at https://app.magnitude.run/signup, then creating one in Settings->API Keys. Then configure it in one of two ways:
 
