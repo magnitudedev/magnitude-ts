@@ -1,24 +1,32 @@
 import { Magnitude } from './client';
-import { TestRunner } from './testRunner';
+import { TestRuntime } from './testRuntime';
 import { TestStepSchema } from './schema';
 import { z } from 'zod';
 import { TestCase as TestCaseData, TestStep as TestStepData } from './types';
 
 class TestStep {
     // Test step builder class
+    private testCase: TestCase;
     private description: string;
     private checks: string[] = [];
     private testData: Record<string, string> = {};
     private freeformTestData: string[] = [];
     private secureTestData: Record<string, string> = {};
 
-    constructor(description: string) {
+    constructor(testCase: TestCase, description: string) {
+        // Not mean to be initialized directly, use TestCase.step()
+        this.testCase = testCase;
         this.description = description;
     }
 
     public check(description: string): TestStep {
         this.checks.push(description);
         return this;
+    }
+
+    public step(description: string): TestStep {
+        // Enable step chaining
+        return this.testCase.step(description);
     }
 
     public data(data: Record<string, string> | string): TestStep {
@@ -81,13 +89,13 @@ export class TestCase {
         this.url = options.url;
     }
 
-    public addStep(description: string): TestStep {
-        const step = new TestStep(description);
+    public step(description: string): TestStep {
+        const step = new TestStep(this, description);
         this.steps.push(step);
         return step;
     }
 
-    public run(): TestRunner {
+    public run(): TestRuntime {
         //console.log("TestCase.run()");
         // Ensure Magnitude is initialized
         if (!Magnitude.isInitialized()) {
@@ -95,7 +103,7 @@ export class TestCase {
         }
 
         // Create and return a runner
-        return new TestRunner(this);
+        return new TestRuntime(this);
     }
 
     public toData(): TestCaseData {

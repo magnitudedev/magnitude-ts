@@ -10,7 +10,7 @@ import { TunnelClient } from 'bunnel';
 import { ProblemError, WarningError } from './errors';
 
 
-export class TestRunner {
+export class TestRuntime {
     private testCase: TestCase;
     private runningPromise: Promise<TestRunResult>;
     private pollTimeout: NodeJS.Timeout | null = null;
@@ -26,9 +26,14 @@ export class TestRunner {
     private showDisplay: boolean = false;
     private renderer: TestRenderer | null = null;
     private tunnelClient: TunnelClient | null = null;
+    /**
+     * Flag to track whether this runtime is managed by TestViewer
+     * When true, the show() method will not start its own rendering
+     */
+    private isManagedByViewer: boolean = false;
 
     constructor(testCase: TestCase) {
-        console.log("Test Runner Intialized");
+        //console.log("Test Runner Intialized");
         // Start test case
         this.testCase = testCase;
         //this.runningPromise = this.execute();
@@ -82,9 +87,9 @@ export class TestRunner {
             this.callProblemCallback(problem);
 
             if (Magnitude.shouldThrowOnProblem()) {
-                if (Magnitude.shouldThrowOnProblem()) {
-                    this.rejectRunningPromise(new ProblemError(problem));
-                }
+                //if (Magnitude.shouldThrowOnProblem()) {
+                this.rejectRunningPromise(new ProblemError(problem));
+                //}
             }
         }
         
@@ -204,28 +209,43 @@ export class TestRunner {
         if (this.problemCallback) this.problemCallback(problem);
     }
 
-    public onStart(callback: (run: TestRunResult) => void): TestRunner {
+    public onStart(callback: (run: TestRunResult) => void): TestRuntime {
         // Called when the run API returns
         this.startCallback = callback;
         return this;
     }
 
-    public onProgress(callback: (run: TestRunResult) => void): TestRunner {
+    public onProgress(callback: (run: TestRunResult) => void): TestRuntime {
         this.progressCallback = callback;
         return this;
     }
 
-    public onProblem(callback: (problem: Problem) => void): TestRunner {
+    public onProblem(callback: (problem: Problem) => void): TestRuntime {
         this.problemCallback = callback;
         return this;
     }
 
-    public onWarning(callback: (warning: Warning) => void): TestRunner {
+    public onWarning(callback: (warning: Warning) => void): TestRuntime {
         this.warningCallback = callback;
         return this;
     }
 
-    public show(): TestRunner {
+    /**
+     * Mark this runtime as being managed by TestViewer
+     */
+    public setManagedByViewer(isManaged: boolean): void {
+        this.isManagedByViewer = isManaged;
+    }
+
+    /**
+     * Show the test UI with continuous rendering
+     */
+    public show(): TestRuntime {
+        // If this runtime is being managed by TestViewer, don't start our own rendering
+        if (this.isManagedByViewer) {
+            return this;
+        }
+        
         //console.log("show()")
         // Create renderer if it doesn't exist
         if (!this.renderer) {
@@ -241,6 +261,15 @@ export class TestRunner {
         return this;
     }
 
+    // public cancel(): void {
+    //     if (this.pollTimeout) {
+    //         clearTimeout(this.pollTimeout);
+    //         this.pollTimeout = null;
+    //     }
+    // }
+
+    // Implement Promise interface
+
     // Enables awaiting the class itself
     then<TResult1 = TestRunResult, TResult2 = never>(
         onfulfilled?: ((value: TestRunResult) => TResult1 | PromiseLike<TResult1>) | null,
@@ -248,5 +277,17 @@ export class TestRunner {
     ): Promise<TResult1 | TResult2> {
         // Return the already running promise with the callbacks attached
         return this.runningPromise.then(onfulfilled, onrejected);
+    }
+
+    catch<TResult = never>(
+        onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | null
+    ): Promise<TestRunResult | TResult> {
+        return this.runningPromise.catch(onrejected);
+    }
+
+    finally(
+        onfinally?: (() => void) | null
+    ): Promise<TestRunResult> {
+        return this.runningPromise.finally(onfinally);
     }
 }

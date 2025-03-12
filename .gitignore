@@ -28,3 +28,6 @@ yarn-error.log*
 
 # Test coverage
 coverage/
+
+.yalc/
+yalc.lock

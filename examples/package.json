@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@types/node": "^22.13.4",
-    "magnitude-ts": "file:..",
+    "magnitude-ts": "file:.yalc/magnitude-ts",
     "typescript": "^5.7.3"
   },
   "devDependencies": {

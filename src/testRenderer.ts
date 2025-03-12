@@ -19,6 +19,14 @@ export class TestRenderer {
     constructor() { }
 
     /**
+     * Update the test case without starting the render loop
+     */
+    public updateTestCase(testCase: TestCase): void {
+        this.testCase = testCase;
+        this.startTime = Date.now();
+    }
+
+    /**
      * Start continuous rendering with animation, even before test data is available
      */
     public startRendering(testCase: TestCase): void {
@@ -83,10 +91,10 @@ export class TestRenderer {
     }
 
     /**
-     * Render a single frame of the display
+     * Get the rendered output as a string without updating the display
      */
-    private renderFrame(): void {
-        if (!this.testCase) return;
+    public getRenderedOutput(): string {
+        if (!this.testCase) return '';
 
         // Increment spinner frame
         this.spinnerFrameIndex = (this.spinnerFrameIndex + 1) % this.spinnerFrames.length;
@@ -102,6 +110,7 @@ export class TestRenderer {
             lines.push(`${spinner} Test: ${this.testCase.toData().name}`);
             lines.push(`Test run starting...`);
         } else {
+            // Use the existing rendering logic but store in lines array
             const data = this.lastRun.getRawData();
             const steps = data.steps;
             const actions = data.actions || [];
@@ -160,12 +169,11 @@ export class TestRenderer {
             lines.push(`${displaySpinner}${status} ${this.testCase.toData().name} ` + chalk.blackBright(`⏱ ${elapsedTime} | Step ${currentStep + 1}/${totalSteps} | Actions: ${actionCount}`));
 
             if (this.testCase.getTunnelUrl()) {
-                const localUrl = this.testCase.getUrl()
+                const localUrl = this.testCase.getUrl();
                 const tunnelUrl = this.testCase.getTunnelUrl();
-                lines.push(chalk.blackBright(`⛏ Tunnel: ${tunnelUrl} -> ${localUrl}`))
+                lines.push(chalk.blackBright(`⛏ Tunnel: ${tunnelUrl} -> ${localUrl}`));
             }
 
-            //const url = `https://app.magnitude.run/console/${this.testCase.getInternalId()}/runs/${data.id}`;
             lines.push(magnitudeBlue(`⚭ Link: ${this.lastRun.getUrl()}`));
 
             // 3. Steps and checks progress
@@ -197,18 +205,7 @@ export class TestRenderer {
                 }
             }
 
-            // 5. Problems section at the bottom
-            // const problems = this.lastRun.getProblems();
-            // if (problems.length > 0) {
-            //     lines.push(brightMagnitudeBlue(`\nProblems:`));
-            //     for (const problem of problems) {
-            //         const severity = problem.getSeverity();
-            //         //const severitySymbol = this.getSeveritySymbol(severity);
-            //         lines.push(`  ${this.getSeverityDescriptor(severity)}: ${problem.getTitle()} `);
-            //         lines.push(`    ${magnitudeBlue('Expected')}: ${problem.getExpectedResult()}`);
-            //         lines.push(`    ${magnitudeBlue('Actual')}: ${problem.getActualResult()}`);
-            //     }
-            // }
+            // Handle problems
             const problem = this.lastRun.getProblem();
             const warnings = this.lastRun.getWarnings();
 
@@ -234,8 +231,24 @@ export class TestRenderer {
             }
         }
 
-        // Update the display with all formatted lines joined
-        logUpdate(lines.join('\n'));
+        // Return the joined string instead of updating the display
+        return lines.join('\n');
+    }
+
+    /**
+     * Render a single frame of the display
+     * 
+     * Note: This method is only used when this renderer is running standalone,
+     * not when integrated with TestViewer
+     */
+    private renderFrame(): void {
+        if (!this.testCase) return;
+
+        // Get the rendered output as a string
+        const output = this.getRenderedOutput();
+        
+        // Update the display - only called in standalone mode
+        logUpdate(output);
     }
 
     private getActionSymbol(variant: "load" | "click" | "hover" | "type" | "scroll" | "wait" | "back") {
@@ -277,5 +290,12 @@ export class TestRenderer {
             case "cosmetic": return chalk.hex('#FFFF00')("Cosmetic");
             default: return chalk.hex('#FFFFFF')("Unknown");
         }
+    }
+
+    /**
+     * Check if the renderer is currently running
+     */
+    public isRunning(): boolean {
+        return this.isActive && this.renderInterval !== null;
     }
 }

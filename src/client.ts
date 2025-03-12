@@ -28,9 +28,15 @@ const DEFAULT_CONFIG: Omit<Required<MagnitudeConfig>, 'apiKey'> = {
     throwOnWarning: false,
 };
 
+// Ensure the global state exists
+if (!(global as any).__magnitude__) {
+    (global as any).__magnitude__ = {
+        instance: null,
+        initialized: false
+    };
+}
+
 export class Magnitude {
-    private static instance: Magnitude | null = null;
-    private static initialized: boolean = false;
     private config: Required<MagnitudeConfig>;
     private api: AxiosInstance;
 
@@ -57,23 +63,24 @@ export class Magnitude {
     }
 
     public static init(config: MagnitudeConfig = {}): void {
-        this.instance = new Magnitude(config);
-        this.initialized = true;
+        //console.log("Magnitude init()", config);
+        (global as any).__magnitude__.instance = new Magnitude(config);
+        (global as any).__magnitude__.initialized = true;
     }
 
     public static getInstance(): Magnitude {
-        if (!this.instance) {
+        if (!(global as any).__magnitude__.instance) {
             this.init({});
         }
-        return this.instance!;
+        return (global as any).__magnitude__.instance;
     }
 
     public static isInitialized(): boolean {
-        if (!this.initialized) {
+        if (!(global as any).__magnitude__.initialized) {
             // Attempt auto-initialize
             this.getInstance();
         }
-        return this.initialized;
+        return (global as any).__magnitude__.initialized === true;
     }
 
     public static getTunnelUrl(): string {

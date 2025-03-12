@@ -13,12 +13,12 @@ async function runTest() {
         url: `https://qa-bench.com?bugs=["companies.create.failSilently"]`
     });
     
-    loginTest.addStep("Login to the app")
+    loginTest.step("Login to the app")
         .check("Can see dashboard")
         .data({ username: "test-user@magnitude.run" })
         .secureData({ password: "test" });
     
-    loginTest.addStep("Create a new company")
+    loginTest.step("Create a new company")
         .data("Make up the first 2 values and use defaults for the rest")
         .check("Company added successfully");
     

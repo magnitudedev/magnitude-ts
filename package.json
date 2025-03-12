@@ -2,9 +2,13 @@
   "name": "magnitude-ts",
   "version": "0.2.1",
   "description": "A TypeScript client for running automated UI tests through the Magnitude testing platform",
+  "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.cts",
+  "bin": {
+    "magnitude": "dist/testRunner/cli.js"
+  },
   "exports": {
     "require": {
       "types": "./dist/index.d.cts",
@@ -29,7 +33,9 @@
   "scripts": {
     "build": "tsc && pkgroll",
     "check": "tsc --noEmit",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "cli": "bun --watch src/testRunner/cli.ts",
+    "pubdev": "npm run build && yalc publish --force --push"
   },
   "keywords": [
     "testing",
@@ -38,7 +44,7 @@
     "magnitude",
     "typescript"
   ],
-  "author": "Tom Greenwald",
+  "author": "Anders Lie, Tom Greenwald",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.13.4",
@@ -46,10 +52,13 @@
     "typescript": "~5.7.2"
   },
   "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2",
     "@types/log-update": "^3.1.0",
     "axios": "^1.7.9",
-    "bunnel": "^0.1.1",
+    "bunnel": "^0.1.3",
     "chalk": "^5.4.1",
+    "esbuild": "^0.25.1",
+    "glob": "^11.0.1",
     "log-update": "^6.1.0",
     "zod": "^3.24.2"
   }
