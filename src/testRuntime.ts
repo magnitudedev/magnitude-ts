@@ -102,7 +102,12 @@ export class TestRuntime {
         //console.log("Test Case:", this.testCase.toData());
 
         // Establish tunnel if necessary
-        const url = this.testCase.getUrl();
+        let url = this.testCase.getUrl();
+
+        // If no protocol in test case URL, assume HTTP
+        if (!url.includes('://')) {
+            url = 'http://' + url;
+        }
 
         if (Magnitude.isAutoTunnelEnabled() && isLocalUrl(url)) {
             // Establish tunnel

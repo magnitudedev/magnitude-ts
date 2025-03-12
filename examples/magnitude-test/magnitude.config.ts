@@ -2,5 +2,6 @@
 import { defineConfig } from "magnitude-ts";
 
 export default defineConfig({
-    baseUrl: "https://qa-bench.com",
+    baseUrl: "localhost:5173"
+    //baseUrl: "https://qa-bench.com",
 });
