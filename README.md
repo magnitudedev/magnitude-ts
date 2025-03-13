@@ -91,7 +91,7 @@ This is handled automatically - when you specify a private URL the SDK will dete
 
 Magnitude uses multi-modal LLMs and state-of-the-art web interaction techniques to follow the intention of a natural language test case, rather than specific brittle instructions that rely on selectors (e.g. selenium or playwright).
 
-The LLM decides at runtime what to do based on the test case steps, a screenshot of the browser, a history of its own activity, and other information. If it encounters something unexpected, a problem will be reported and categorized. If the problem encountered inhibits the further execution of the test case, the test case fails. Some problems identiifed may not justify a failure of the test case, but indicate some smaller visual issue or bug.
+The LLM decides at runtime what to do based on the test case steps, a screenshot of the browser, a history of its own activity, and other information. If it encounters something unexpected, a problem will be reported and categorized. If the problem encountered inhibits the further execution of the test case, the test case fails. Some problems identified may not justify a failure of the test case, but indicate some smaller visual issue or bug.
 
 ## Contact
 
