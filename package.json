@@ -1,6 +1,6 @@
 {
   "name": "magnitude-ts",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "A TypeScript client for running automated UI tests through the Magnitude testing platform",
   "type": "module",
   "main": "./dist/index.cjs",
