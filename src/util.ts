@@ -39,15 +39,12 @@ function isLocalIp(address: string): boolean {
  */
 function isLocalUrl(url: string): boolean {
     try {
-        console.log("URL:", url);
         // Asume HTTP protocol if missing
         if (!url.includes('://')) {
             url = 'http://' + url;
         }
-        console.log("Modified URL:", url);
 
         const parsedUrl = new URL(url);
-        console.log("Parsed URL:", parsedUrl);
         const hostname = parsedUrl.hostname.toLowerCase();
 
         // Check for localhost domain

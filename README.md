@@ -26,17 +26,25 @@ npm install --save-dev magnitude-ts
 
 ## Setup
 
+Once installed, setup Magnitude in your project by running:
 ```
 npx magnitude init
 ```
+This will create a basic tests directory `tests/magnitude` with:
+- `magnitude.config.ts`: Magnitude test configuration file
+- `example.mag.ts`: An example test file
 
-First, you'll need to initialize the Magnitude client with your API key. You can get a free API key by signing up at https://app.magnitude.run/signup, then creating one in Settings->API Keys. Then configure it in one of two ways:
+Then, you'll need to initialize the Magnitude client with your API key. You can get a free API key by signing up at https://app.magnitude.run/signup, then creating one in Settings->API Keys. Then configure it in one of two ways:
 
-1. Initialize in code:
-```typescript
-import { Magnitude } from 'magnitude-ts';
+1. Configure in the generated `magnitude.config.ts`:
+```ts
+import { defineConfig } from 'magnitude-ts';
 
-Magnitude.init({ apiKey: 'your-api-key-here' });
+export default defineConfig({
+    baseUrl: "localhost:5173",
+    // Add API key:
+    apiKey: 'your-api-key-here'
+});
 ```
 
 2. Or set it as an environment variable:
@@ -44,35 +52,29 @@ Magnitude.init({ apiKey: 'your-api-key-here' });
 export MAGNITUDE_API_KEY=your-api-key-here
 ```
 
-
 ## Running Test Cases
 
-Here's a basic test case:
-```ts
-import { TestCase } from 'magnitude-ts';
+To run your Magnitude tests, simply run:
+```
+npx magnitude
+```
+This will run all Magnitude test files discovered with the `*.mag.ts` pattern.
 
-async function runTest() {
-    const loginTest = new TestCase({
-        id: "login-test", // any ID you want
-        name: "Basic Login Test", // friendly name, optional
-        url: "https://qa-bench.com" // target site url
-    });
-    
-    loginTest.addStep("Login to the app")
-        .check("Can see dashboard") // natural language assertion
-        .data({ username: "test-user@magnitude.com" } // arbitrary key/values
-        .secureData({ password: "test" }); // encrypted data
-    // ^ in reality pull sensitive data from process.env or wherever
-    
-    loginTest.addStep("Create a new company")
+Here's an example of a basic test case:
+```ts
+// tests/example.mag.ts
+import { test } from 'magnitude-ts';
+
+// Example URL override, defaults to configured baseUrl
+test('can login with valid credentials', { url: "https://qa-bench.com" })
+    .step('Log in to the app')
+        .data({ username: "test-user@magnitude.run" }) // arbitrary key/values
+        .secureData({ password: "test" }) // sensitive data
+        .check('Can see dashboard') // natural language assertion
+            
+    .step('Create a new company')
         .data("Make up the first 2 values and use defaults for the rest")
         .check("Company added successfully");
-    
-    // start the test case!
-    const result = await loginTest.run().show();
-}
-
-runTest();
 ```
 
 Any step descriptions, checks, or data are represented in natural language. You can be as vague or specific as you'd like - though more specificity does generally lead to more consistent test runs.

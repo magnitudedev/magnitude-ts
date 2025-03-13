@@ -178,10 +178,16 @@ export default defineConfig({
 
 const exampleTestTemplate = `import { test } from 'magnitude-ts';
 
-// test('can add a todo')
-//     .step('Enter and add a todo')
-//         .data('Create more Magnitude test cases')
-//         .check('Todo appears')
+// Example URL override, defaults to configured baseUrl
+test('can login with valid credentials', { url: "https://qa-bench.com" })
+    .step('Log in to the app')
+        .data({ username: "test-user@magnitude.run" }) // arbitrary key/values
+        .secureData({ password: "test" }) // sensitive data
+        .check('Can see dashboard') // natural language assertion
+            
+    .step('Create a new company')
+        .data("Make up the first 2 values and use defaults for the rest")
+        .check("Company added successfully");
 `;
 
 async function initializeProject(): Promise<void> {
